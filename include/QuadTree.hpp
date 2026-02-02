@@ -41,8 +41,10 @@ private:
 	const std::vector<float>* m_masses;
 
 	std::vector<Node> m_nodes;
-	std::vector<CoM> m_coms;
-	std::vector<BodyIndex_t> m_bodyIndices;
+	std::vector<CoM> m_nodeComs;
+	std::vector<BodyIndex_t> m_nodeBodyIndices;
+	std::vector<uint8_t> m_nodeIsLeaf;
+
 	std::vector<float> m_precomputedBoundsSizes;
 
 	NodeIndex_t m_nodeCounter = 0;
@@ -56,8 +58,6 @@ private:
 	glm::vec2 accelAt(glm::vec2 position, NodeIndex_t nodeIndex, int depth) const;
 
 	void visualize(NodeIndex_t nodeIndex, Rectangle rect, float cameraZoom) const;
-
-	static bool isLeaf(const Node& node);
 };
 
 #endif //GRAV_SIM_CPU_QUAD_TREE_HPP

@@ -24,8 +24,9 @@ QuadTree::QuadTree(const std::vector<glm::vec2>& positions, const std::vector<fl
 void QuadTree::buildTree()
 {
 	m_nodes.clear();
-	m_coms.clear();
-	m_bodyIndices.clear();
+	m_nodeComs.clear();
+	m_nodeBodyIndices.clear();
+	m_nodeIsLeaf.clear();
 	m_precomputedBoundsSizes.clear();
 	m_nodeCounter = 0;
 	m_boundsSize = 0;
@@ -39,8 +40,9 @@ void QuadTree::buildTree()
 
 	const auto reserveSize = static_cast<size_t>(QUADTREE_RESERVE_MULTIPLIER * m_positions->size());
 	m_nodes.resize(reserveSize);
-	m_coms.resize(reserveSize);
-	m_bodyIndices.resize(reserveSize);
+	m_nodeComs.resize(reserveSize);
+	m_nodeBodyIndices.resize(reserveSize);
+	m_nodeIsLeaf.resize(reserveSize);
 
 	calculateBoundingSquare();
 
@@ -103,7 +105,7 @@ NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, cons
 		return NULL_INDEX;
 
 	const NodeIndex_t result = m_nodeCounter++;
-	CoM& com = m_coms[result];
+	CoM& com = m_nodeComs[result];
 	const long nodeLength = end - begin;
 
 	glm::vec2 momentSum = {};
@@ -121,11 +123,13 @@ NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, cons
 
 	if (nodeLength == 1)
 	{
-		m_bodyIndices[result] = *begin;
+		m_nodeBodyIndices[result] = *begin;
+		m_nodeIsLeaf[result] = true;
 		return result;
 	}
 
-	m_bodyIndices[result] = NULL_INDEX;
+	m_nodeBodyIndices[result] = NULL_INDEX;
+	m_nodeIsLeaf[result] = false;
 
 	// TODO: Check for bodies in identical positions.
 
@@ -174,12 +178,12 @@ static glm::vec2 gravAccel(const glm::vec2 rel, const float sqrDist, const float
 
 glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeIndex, const int depth) const
 {
-	const CoM& com = m_coms[nodeIndex];
+	const CoM& com = m_nodeComs[nodeIndex];
 	const Node& node = m_nodes[nodeIndex];
 
-	if (isLeaf(node))
+	if (m_nodeIsLeaf[nodeIndex])
 	{
-		if ((*m_positions)[m_bodyIndices[nodeIndex]] == position)
+		if ((*m_positions)[m_nodeBodyIndices[nodeIndex]] == position)
 			return {};
 
 		return gravAccel(position, com.position, com.mass);
@@ -217,7 +221,7 @@ void QuadTree::visualize(const NodeIndex_t nodeIndex, const Rectangle rect, cons
 	DrawRectangleRec(rect, QUADTREE_VIS_FILL_COLOR);
 	const Node& node = m_nodes[nodeIndex];
 
-	if (isLeaf(node))
+	if (m_nodeIsLeaf[nodeIndex])
 	{
 		DrawRectangleLinesEx(rect, QUADTREE_VIS_LINE_THICKNESS / cameraZoom, QUADTREE_VIS_LEAF_OUTLINE_COLOR);
 		return;
@@ -238,12 +242,4 @@ void QuadTree::visualize(const NodeIndex_t nodeIndex, const Rectangle rect, cons
 		visualize(node.child4,
 			{rect.x + rect.width / 2.0f, rect.y + rect.height / 2.0f,
 				rect.width / 2.0f, rect.height / 2.0f}, cameraZoom);
-}
-
-bool QuadTree::isLeaf(const Node& node)
-{
-	return node.child1 == NULL_INDEX &&
-		   node.child2 == NULL_INDEX &&
-		   node.child3 == NULL_INDEX &&
-		   node.child4 == NULL_INDEX;
 }
