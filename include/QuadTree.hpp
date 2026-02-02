@@ -21,7 +21,7 @@ public:
 
 	void buildTree();
 
-	[[nodiscard]] glm::vec2 accelAt(glm::vec2 pos) const;
+	[[nodiscard]] glm::vec2 accelAt(glm::vec2 position) const;
 
 	void visualize(float cameraZoom) const;
 
@@ -48,6 +48,8 @@ private:
 	void calculateBoundingSquare();
 
 	NodeIndex_t buildTree(IndexIt_t begin, IndexIt_t end, float size, glm::vec2 center);
+
+	glm::vec2 accelAt(glm::vec2 position, NodeIndex_t nodeIndex, int depth) const;
 
 	void visualize(NodeIndex_t nodeIndex, Rectangle rect, float cameraZoom) const;
 

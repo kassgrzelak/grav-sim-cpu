@@ -15,7 +15,6 @@ class Sim
 {
 public:
 	Sim();
-	~Sim();
 
 	void run();
 
@@ -33,6 +32,7 @@ private:
 
 	bool m_paused = false;
 	bool m_visualizeQuadTree = false;
+	bool m_showDetails = false;
 
 	void initializeVelocities();
 
@@ -40,6 +40,8 @@ private:
 	void takeInput();
 	void update();
 	void draw() const;
+
+	void drawDetails() const;
 };
 
 #endif //GRAV_SIM_CPU_SIM_HPP

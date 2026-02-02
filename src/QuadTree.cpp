@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
+#include <glm/gtx/norm.hpp>
 
 static constexpr long double QUADTREE_RESERVE_MULTIPLIER = 4;
 
@@ -41,9 +42,9 @@ void QuadTree::buildTree()
 	buildTree(m_indices.begin(), m_indices.end(), m_boundsSize, m_boundsCenter);
 }
 
-glm::vec2 QuadTree::accelAt(const glm::vec2 pos) const
+glm::vec2 QuadTree::accelAt(const glm::vec2 position) const
 {
-	return {};
+	return accelAt(position, 0, 0);
 }
 
 void QuadTree::visualize(const float cameraZoom) const
@@ -60,16 +61,16 @@ void QuadTree::calculateBoundingSquare()
 	glm::vec2 max = {-INFINITY, -INFINITY};
 
 	// TODO: Mutex and make this parallel?
-	for (const auto& pos : *m_positions)
+	for (const auto& position : *m_positions)
 	{
-		if (pos.x < min.x)
-			min.x = pos.x;
-		if (pos.x > max.x)
-			max.x = pos.x;
-		if (pos.y < min.y)
-			min.y = pos.y;
-		if (pos.y > max.y)
-			max.y = pos.y;
+		if (position.x < min.x)
+			min.x = position.x;
+		if (position.x > max.x)
+			max.x = position.x;
+		if (position.y < min.y)
+			min.y = position.y;
+		if (position.y > max.y)
+			max.y = position.y;
 	}
 
 	const float width = max.x - min.x;
@@ -113,10 +114,6 @@ NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, cons
 	const auto xSplitUpper = std::partition(begin, ySplit, left);
 	const auto xSplitLower = std::partition(ySplit, end, left);
 
-	// Exit early if
-	if (xSplitUpper == begin && xSplitLower == end)
-		return result;
-
 	auto& [child1, child2, child3, child4] = m_nodes[result];
 	const float halfSize = size / 2.0f;
 	const float quarterSize = halfSize / 2.0f;
@@ -131,6 +128,61 @@ NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, cons
 		{center.x + quarterSize, center.y + quarterSize});
 
 	return result;
+}
+
+static glm::vec2 gravAccel(const glm::vec2 position, const glm::vec2 sourcePosition, const float sourceMass)
+{
+	const glm::vec2 rel = sourcePosition - position;
+	const float sqrDist = glm::length2(rel);
+
+	if (sqrDist == 0.0f)
+		return {};
+
+	const glm::vec2 dir = rel / sqrtf(sqrDist);
+
+	return dir * GRAV_CONST * sourceMass / (GRAV_SMOOTHNESS + sqrDist);
+}
+
+static glm::vec2 gravAccel(const glm::vec2 rel, const float sqrDist, const float sourceMass)
+{
+	const glm::vec2 dir = rel / sqrtf(sqrDist);
+
+	return dir * GRAV_CONST * sourceMass / (GRAV_SMOOTHNESS + sqrDist);
+}
+
+glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeIndex, const int depth) const
+{
+	const CoM& com = m_coms[nodeIndex];
+	const Node& node = m_nodes[nodeIndex];
+
+	if (isLeaf(node))
+		return gravAccel(position, com.position, com.mass);
+
+	const glm::vec2 rel = com.position - position;
+	const float sqrDist = glm::length2(rel);
+
+	if (sqrDist < 1e-2f)
+		return {};
+
+	const float boundsSize = m_boundsSize / powf(2, static_cast<float>(depth));
+	const float sqrBoundsSize = boundsSize * boundsSize;
+	const float sqrHeuristic = sqrBoundsSize / sqrDist;
+
+	if (sqrHeuristic < THETA * THETA)
+		return gravAccel(rel, sqrDist, com.mass);
+
+	glm::vec2 accelSum = {};
+
+	if (node.child1 != NULL_INDEX)
+		accelSum += accelAt(position, node.child1, depth + 1);
+	if (node.child2 != NULL_INDEX)
+		accelSum += accelAt(position, node.child2, depth + 1);
+	if (node.child3 != NULL_INDEX)
+		accelSum += accelAt(position, node.child3, depth + 1);
+	if (node.child4 != NULL_INDEX)
+		accelSum += accelAt(position, node.child4, depth + 1);
+
+	return accelSum;
 }
 
 void QuadTree::visualize(const NodeIndex_t nodeIndex, const Rectangle rect, const float cameraZoom) const

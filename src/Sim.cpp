@@ -5,6 +5,7 @@
 #include "Sim.hpp"
 
 #include <exception>
+#include <format>
 #include <iostream>
 
 #include "BodyGenerator.hpp"
@@ -35,11 +36,6 @@ Sim::Sim() : m_quadTree(m_positions, m_masses), m_circleTex(), m_camera()
 	m_camera.offset = {g_screenCenter.x, g_screenCenter.y};
 	m_camera.rotation = 0.0f;
 	m_camera.zoom = 1.0f;
-}
-
-Sim::~Sim()
-{
-	CloseWindow();
 }
 
 void Sim::run()
@@ -97,21 +93,25 @@ void Sim::takeInput()
 			m_camera.zoom = CAMERA_MIN_ZOOM;
 	}
 
-	// Pause.
+	// Toggles.
 	{
 		if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_P))
 			m_paused = !m_paused;
-	}
-
-	// Quadtree visualization.
-	{
 		if (IsKeyPressed(KEY_Q))
 			m_visualizeQuadTree = !m_visualizeQuadTree;
+		if (IsKeyPressed(KEY_D))
+			m_showDetails = !m_showDetails;
 	}
 }
 
 void Sim::update()
 {
+	for (BodyIndex_t i = 0; i < m_bodyNum; ++i)
+	{
+		m_velocities[i] += m_quadTree.accelAt(m_positions[i]) * DELTA_TIME;
+		m_positions[i] += m_velocities[i] * DELTA_TIME;
+	}
+
 	m_quadTree.buildTree();
 }
 
@@ -141,6 +141,15 @@ void Sim::draw() const
 		m_quadTree.visualize(m_camera.zoom);
 	EndMode2D();
 
-	DrawFPS(10, 10);
+	if (m_showDetails)
+		drawDetails();
+
+	DrawFPS(5, 5);
 	EndDrawing();
+}
+
+void Sim::drawDetails() const
+{
+	DrawText(std::format("N = {}", m_bodyNum).c_str(),
+		5, static_cast<int>(g_screenDims.y - 25), 20, WHITE);
 }

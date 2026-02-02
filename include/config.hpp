@@ -8,7 +8,7 @@
 #include <glm/glm.hpp>
 #include <raylib.h>
 
-constexpr float THETA = 0.5f;
+constexpr float THETA = 2.0f;
 constexpr float GRAV_CONST = 1.0f;
 constexpr float GRAV_SMOOTHNESS = 1.0f;
 
@@ -21,12 +21,11 @@ constexpr float DELTA_TIME = TIME_SCALE / TARGET_FPS;
 
 constexpr float GALAXY_OUTER_RADIUS = 500.0f;
 constexpr float GALAXY_INNER_RADIUS = 200.0f;
-constexpr unsigned GALAXY_RINGS = 100;
-constexpr float GALAXY_DENSITY = 0.05f;
-constexpr float GALAXY_CENTER_DIAMETER = 10.0f;
+constexpr float GALAXY_PACK_DISTANCE = 10.0f;
 constexpr float GALAXY_CENTER_MASS = 1e7f;
-constexpr float GALAXY_OTHER_DIAMETER = 2.0f;
+constexpr float GALAXY_CENTER_DIAMETER = 10.0f;
 constexpr float GALAXY_OTHER_MASS = 10.0f;
+constexpr float GALAXY_OTHER_DIAMETER = 2.0f;
 
 enum class GenerationType
 {
