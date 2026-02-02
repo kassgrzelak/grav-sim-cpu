@@ -42,6 +42,7 @@ private:
 
 	std::vector<Node> m_nodes;
 	std::vector<CoM> m_coms;
+	std::vector<BodyIndex_t> m_bodyIndices;
 	std::vector<float> m_precomputedBoundsSizes;
 
 	NodeIndex_t m_nodeCounter = 0;

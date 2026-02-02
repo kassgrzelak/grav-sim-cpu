@@ -18,8 +18,6 @@ static constexpr Color QUADTREE_VIS_OUTLINE_COLOR = {255, 255, 255, 50};
 static constexpr Color QUADTREE_VIS_LEAF_OUTLINE_COLOR = RED;
 static constexpr float QUADTREE_VIS_LINE_THICKNESS = 1.0f;
 
-static constexpr float BODY_COINCIDENCE_EPSILON = 1e-4f;
-
 QuadTree::QuadTree(const std::vector<glm::vec2>& positions, const std::vector<float>& masses)
 	: m_positions(&positions), m_masses(&masses) { }
 
@@ -27,6 +25,7 @@ void QuadTree::buildTree()
 {
 	m_nodes.clear();
 	m_coms.clear();
+	m_bodyIndices.clear();
 	m_precomputedBoundsSizes.clear();
 	m_nodeCounter = 0;
 	m_boundsSize = 0;
@@ -41,6 +40,7 @@ void QuadTree::buildTree()
 	const auto reserveSize = static_cast<size_t>(QUADTREE_RESERVE_MULTIPLIER * m_positions->size());
 	m_nodes.resize(reserveSize);
 	m_coms.resize(reserveSize);
+	m_bodyIndices.resize(reserveSize);
 
 	calculateBoundingSquare();
 
@@ -120,7 +120,12 @@ NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, cons
 	com.mass = massSum;
 
 	if (nodeLength == 1)
+	{
+		m_bodyIndices[result] = *begin;
 		return result;
+	}
+
+	m_bodyIndices[result] = NULL_INDEX;
 
 	// TODO: Check for bodies in identical positions.
 
@@ -152,7 +157,7 @@ static glm::vec2 gravAccel(const glm::vec2 position, const glm::vec2 sourcePosit
 	const glm::vec2 rel = sourcePosition - position;
 	const float sqrDist = glm::length2(rel);
 
-	if (sqrDist < BODY_COINCIDENCE_EPSILON)
+	if (sqrDist == 0.0f)
 		return {};
 
 	const glm::vec2 dir = rel / sqrtf(sqrDist);
@@ -173,12 +178,17 @@ glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeInde
 	const Node& node = m_nodes[nodeIndex];
 
 	if (isLeaf(node))
+	{
+		if ((*m_positions)[m_bodyIndices[nodeIndex]] == position)
+			return {};
+
 		return gravAccel(position, com.position, com.mass);
+	}
 
 	const glm::vec2 rel = com.position - position;
 	const float sqrDist = glm::length2(rel);
 
-	if (sqrDist < BODY_COINCIDENCE_EPSILON)
+	if (sqrDist == 0.0f)
 		return {};
 
 	const float boundsSize = m_precomputedBoundsSizes[depth];
