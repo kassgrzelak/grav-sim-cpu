@@ -1,0 +1,42 @@
+//
+// Created by kassie on 30/01/2026.
+//
+
+#ifndef GRAV_SIM_CPU_SIM_HPP
+#define GRAV_SIM_CPU_SIM_HPP
+
+#include <vector>
+#include <glm/vec2.hpp>
+
+#include "config.hpp"
+#include "QuadTree.hpp"
+
+class Sim
+{
+public:
+	Sim();
+	void run();
+
+private:
+	std::vector<glm::vec2> m_positions = {};
+	std::vector<glm::vec2> m_velocities = {};
+	std::vector<float> m_masses = {};
+	std::vector<float> m_diameters = {};
+
+	QuadTree m_quadTree;
+	size_t m_bodyNum;
+
+	Texture2D m_circleTex;
+	Camera2D m_camera;
+
+	bool m_paused = false;
+	bool m_visualizeQuadTree = false;
+
+	void initializeVelocities();
+
+	void takeInput();
+	void update();
+	void draw() const;
+};
+
+#endif //GRAV_SIM_CPU_SIM_HPP

@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 4.1)
 project(grav_sim_cpu)
 set(CMAKE_CXX_STANDARD 26)
 
+if (CMAKE_BUILD_TYPE MATCHES Release)
+    message(STATUS "Hi!")
+    set(CMAKE_CXX_FLAGS "-O3 -march=native")
+endif()
+
 include(FetchContent)
 
 find_package(raylib)
@@ -27,7 +32,16 @@ else()
 endif()
 
 add_executable(grav_sim_cpu main.cpp
-        include/config.hpp)
+        include/config.hpp
+        include/Sim.hpp
+        include/BodyGenerator.hpp
+        src/BodyGenerator.cpp
+        src/Sim.cpp
+        include/QuadTree.hpp
+        src/QuadTree.cpp
+        include/CoM.hpp
+        include/common.hpp
+)
 target_link_libraries(grav_sim_cpu PRIVATE
     raylib
     ${GLM_TARGET}
