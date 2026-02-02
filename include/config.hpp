@@ -21,7 +21,7 @@ constexpr float DELTA_TIME = TIME_SCALE / TARGET_FPS;
 
 constexpr float GALAXY_OUTER_RADIUS = 500.0f;
 constexpr float GALAXY_INNER_RADIUS = 200.0f;
-constexpr float GALAXY_PACK_DISTANCE = 4.4f;
+constexpr float GALAXY_PACK_DISTANCE = 5.4f;
 constexpr float GALAXY_CENTER_MASS = 1e7f;
 constexpr float GALAXY_CENTER_DIAMETER = 20.0f;
 constexpr float GALAXY_OTHER_MASS = 10.0f;
@@ -29,7 +29,7 @@ constexpr float GALAXY_OTHER_DIAMETER = 2.0f;
 
 enum class GenerationType
 {
-	Galaxy, // Spawn bodies in rings around a central mass.
+	Galaxy, // Spawn bodies evenly in a ring around a central mass.
 };
 
 constexpr auto BODY_GENERATION = GenerationType::Galaxy;

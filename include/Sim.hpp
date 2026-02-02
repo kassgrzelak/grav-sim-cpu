@@ -34,6 +34,7 @@ private:
 	bool m_visualizeQuadTree = false;
 	bool m_showDetails = false;
 	bool m_timeReverse = false;
+	bool m_showControls = false;
 
 	void initializeVelocities();
 
@@ -43,6 +44,9 @@ private:
 	void draw() const;
 
 	void drawDetails() const;
+	static void drawControls() ;
+
+	static void drawTextRJust(const char* text, int x, int y, int fontSize, Color color);
 };
 
 #endif //GRAV_SIM_CPU_SIM_HPP

@@ -78,7 +78,19 @@ void Sim::takeInput()
 
 		const float mouseWheelDelta = GetMouseWheelMoveV().y;
 		if (mouseWheelDelta != 0)
+		{
+			const Vector2 mouseWorldBefore = GetScreenToWorld2D(GetMousePosition(), m_camera);
+
 			m_camera.zoom = expf(logf(m_camera.zoom) + CAMERA_ZOOM_SCROLL_SPEED * mouseWheelDelta);
+
+			if (m_camera.zoom >= CAMERA_MIN_ZOOM && m_camera.zoom <= CAMERA_MAX_ZOOM)
+			{
+				const Vector2 mouseWorldAfter = GetScreenToWorld2D(GetMousePosition(), m_camera);
+
+				m_camera.target.x += mouseWorldBefore.x - mouseWorldAfter.x;
+				m_camera.target.y += mouseWorldBefore.y - mouseWorldAfter.y;
+			}
+		}
 
 		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
 		{
@@ -94,16 +106,18 @@ void Sim::takeInput()
 	}
 
 	// Toggles.
+#define TOGGLE(key, var) \
+	if (IsKeyPressed(key)) \
+		var = !var
 	{
 		if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_P))
 			m_paused = !m_paused;
-		if (IsKeyPressed(KEY_Q))
-			m_visualizeQuadTree = !m_visualizeQuadTree;
-		if (IsKeyPressed(KEY_D))
-			m_showDetails = !m_showDetails;
-		if (IsKeyPressed(KEY_R))
-			m_timeReverse = !m_timeReverse;
+		TOGGLE(KEY_Q, m_visualizeQuadTree);
+		TOGGLE(KEY_D, m_showDetails);
+		TOGGLE(KEY_R, m_timeReverse);
+		TOGGLE(KEY_C, m_showControls);
 	}
+#undef TOGGLE
 }
 
 void Sim::update()
@@ -111,21 +125,33 @@ void Sim::update()
 	auto indices = m_quadTree.getIndices();
 
 	if (m_timeReverse)
+	{
 		std::for_each(std::execution::par_unseq, indices.begin(), indices.end(),
-			[&](const BodyIndex_t index)
-			{
-				m_positions[index] -= m_velocities[index] * DELTA_TIME;
-				m_velocities[index] -= m_quadTree.accelAt(m_positions[index]) * DELTA_TIME;
-			});
-	else
-		std::for_each(std::execution::par_unseq, indices.begin(), indices.end(),
-			[&](const BodyIndex_t index)
-			{
-				m_velocities[index] += m_quadTree.accelAt(m_positions[index]) * DELTA_TIME;
-				m_positions[index] += m_velocities[index] * DELTA_TIME;
-			});
+		   [&](const BodyIndex_t index)
+		   {
+			   m_positions[index] -= m_velocities[index] * DELTA_TIME;
+		   });
 
-	m_quadTree.buildTree();
+		m_quadTree.buildTree();
+
+		std::for_each(std::execution::par_unseq, indices.begin(), indices.end(),
+		   [&](const BodyIndex_t index)
+		   {
+			   m_velocities[index] -= m_quadTree.accelAt(m_positions[index]) * DELTA_TIME;
+		   });
+	}
+	else
+	{
+		std::for_each(std::execution::par_unseq, indices.begin(), indices.end(),
+		   [&](const BodyIndex_t index)
+		   {
+			   m_velocities[index] += m_quadTree.accelAt(m_positions[index]) * DELTA_TIME;
+			   m_positions[index] += m_velocities[index] * DELTA_TIME;
+		   });
+
+		m_quadTree.buildTree();
+	}
+
 }
 
 void Sim::draw() const
@@ -157,12 +183,53 @@ void Sim::draw() const
 	if (m_showDetails)
 		drawDetails();
 
+	if (m_showControls)
+		drawControls();
+	else
+		drawTextRJust("Press C to show controls",
+			static_cast<int>(g_screenDims.x - 5), static_cast<int>(g_screenDims.y - 25), 20, WHITE);
+
 	DrawFPS(5, 5);
 	EndDrawing();
 }
 
 void Sim::drawDetails() const
 {
-	DrawText(std::format("N = {}", m_bodyNum).c_str(),
-		5, static_cast<int>(g_screenDims.y - 25), 20, WHITE);
+	int y = 5;
+
+#define DRAW_DETAIL(name, value) \
+	DrawText(std::format("{} = {}", name, value).c_str(), \
+		5, static_cast<int>(g_screenDims.y - (y += 20)), 20, WHITE)
+
+	DRAW_DETAIL("Delta time", DELTA_TIME);
+	DRAW_DETAIL("Timescale", TIME_SCALE);
+	DRAW_DETAIL("Target FPS", TARGET_FPS);
+	DRAW_DETAIL("Theta", THETA);
+	DRAW_DETAIL("N", m_bodyNum);
+
+#undef DRAW_DETAIL
+}
+
+void Sim::drawControls()
+{
+	int y = 5;
+
+#define DRAW_CONTROL(control, desc) \
+	drawTextRJust(std::format("{}: {}", control, desc).c_str(), \
+		static_cast<int>(g_screenDims.x - 5), static_cast<int>(g_screenDims.y - (y += 20)), 20, WHITE)
+
+	DRAW_CONTROL("Q", "Quadtree visualization");
+	DRAW_CONTROL("R", "Reverse time");
+	DRAW_CONTROL("D", "Show sim details");
+	DRAW_CONTROL("Space or P", "Pause");
+	DRAW_CONTROL("Scroll or +/-", "Zoom");
+	DRAW_CONTROL("Click and drag", "Pan");
+
+#undef DRAW_CONTROL
+}
+
+void Sim::drawTextRJust(const char* text, const int x, const int y, const int fontSize, const Color color)
+{
+	const int width = MeasureText(text, fontSize);
+	DrawText(text, x - width, y, fontSize, color);
 }
