@@ -33,6 +33,7 @@ private:
 	bool m_paused = false;
 	bool m_visualizeQuadTree = false;
 	bool m_showDetails = false;
+	bool m_timeReverse = false;
 
 	void initializeVelocities();
 

@@ -21,6 +21,8 @@ public:
 
 	void buildTree();
 
+	[[nodiscard]] const std::vector<BodyIndex_t>& getIndices() const;
+
 	[[nodiscard]] glm::vec2 accelAt(glm::vec2 position) const;
 
 	void visualize(float cameraZoom) const;
@@ -34,12 +36,13 @@ private:
 		NodeIndex_t child4 = NULL_INDEX;
 	};
 
-	std::vector<BodyIndex_t> m_indices = {};
+	std::vector<BodyIndex_t> m_indices;
 	const std::vector<glm::vec2>* m_positions;
 	const std::vector<float>* m_masses;
 
 	std::vector<Node> m_nodes;
 	std::vector<CoM> m_coms;
+	std::vector<float> m_precomputedBoundsSizes;
 
 	NodeIndex_t m_nodeCounter = 0;
 	float m_boundsSize = 0;

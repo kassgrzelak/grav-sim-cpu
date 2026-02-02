@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 26)
 
 if (CMAKE_BUILD_TYPE MATCHES Release)
     message(STATUS "Hi!")
-    set(CMAKE_CXX_FLAGS "-O3 -march=native")
+    set(CMAKE_CXX_FLAGS "-O3 -march=native -mtune=native")
 endif()
 
 include(FetchContent)

@@ -7,14 +7,18 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
+#include <stack>
 #include <glm/gtx/norm.hpp>
 
-static constexpr long double QUADTREE_RESERVE_MULTIPLIER = 4;
+static constexpr float QUADTREE_RESERVE_MULTIPLIER = 4;
+static constexpr float PRECOMPUTED_BOUNDS_MIN_SIZE = 1.0f;
 
 static constexpr Color QUADTREE_VIS_FILL_COLOR = {0, 255, 255, 5};
 static constexpr Color QUADTREE_VIS_OUTLINE_COLOR = {255, 255, 255, 50};
 static constexpr Color QUADTREE_VIS_LEAF_OUTLINE_COLOR = RED;
 static constexpr float QUADTREE_VIS_LINE_THICKNESS = 1.0f;
+
+static constexpr float BODY_COINCIDENCE_EPSILON = 1e-4f;
 
 QuadTree::QuadTree(const std::vector<glm::vec2>& positions, const std::vector<float>& masses)
 	: m_positions(&positions), m_masses(&masses) { }
@@ -23,6 +27,7 @@ void QuadTree::buildTree()
 {
 	m_nodes.clear();
 	m_coms.clear();
+	m_precomputedBoundsSizes.clear();
 	m_nodeCounter = 0;
 	m_boundsSize = 0;
 	m_boundsCenter = {};
@@ -40,6 +45,18 @@ void QuadTree::buildTree()
 	calculateBoundingSquare();
 
 	buildTree(m_indices.begin(), m_indices.end(), m_boundsSize, m_boundsCenter);
+
+	float precomputedBoundsSize = m_boundsSize;
+	while (precomputedBoundsSize > PRECOMPUTED_BOUNDS_MIN_SIZE)
+	{
+		m_precomputedBoundsSizes.push_back(precomputedBoundsSize);
+		precomputedBoundsSize /= 2;
+	}
+}
+
+const std::vector<BodyIndex_t>& QuadTree::getIndices() const
+{
+	return m_indices;
 }
 
 glm::vec2 QuadTree::accelAt(const glm::vec2 position) const
@@ -135,7 +152,7 @@ static glm::vec2 gravAccel(const glm::vec2 position, const glm::vec2 sourcePosit
 	const glm::vec2 rel = sourcePosition - position;
 	const float sqrDist = glm::length2(rel);
 
-	if (sqrDist == 0.0f)
+	if (sqrDist < BODY_COINCIDENCE_EPSILON)
 		return {};
 
 	const glm::vec2 dir = rel / sqrtf(sqrDist);
@@ -161,10 +178,10 @@ glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeInde
 	const glm::vec2 rel = com.position - position;
 	const float sqrDist = glm::length2(rel);
 
-	if (sqrDist < 1e-2f)
+	if (sqrDist < BODY_COINCIDENCE_EPSILON)
 		return {};
 
-	const float boundsSize = m_boundsSize / powf(2, static_cast<float>(depth));
+	const float boundsSize = m_precomputedBoundsSizes[depth];
 	const float sqrBoundsSize = boundsSize * boundsSize;
 	const float sqrHeuristic = sqrBoundsSize / sqrDist;
 

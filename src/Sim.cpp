@@ -4,9 +4,9 @@
 
 #include "Sim.hpp"
 
-#include <exception>
+#include <algorithm>
+#include <execution>
 #include <format>
-#include <iostream>
 
 #include "BodyGenerator.hpp"
 
@@ -101,16 +101,29 @@ void Sim::takeInput()
 			m_visualizeQuadTree = !m_visualizeQuadTree;
 		if (IsKeyPressed(KEY_D))
 			m_showDetails = !m_showDetails;
+		if (IsKeyPressed(KEY_R))
+			m_timeReverse = !m_timeReverse;
 	}
 }
 
 void Sim::update()
 {
-	for (BodyIndex_t i = 0; i < m_bodyNum; ++i)
-	{
-		m_velocities[i] += m_quadTree.accelAt(m_positions[i]) * DELTA_TIME;
-		m_positions[i] += m_velocities[i] * DELTA_TIME;
-	}
+	auto indices = m_quadTree.getIndices();
+
+	if (m_timeReverse)
+		std::for_each(std::execution::par_unseq, indices.begin(), indices.end(),
+			[&](const BodyIndex_t index)
+			{
+				m_positions[index] -= m_velocities[index] * DELTA_TIME;
+				m_velocities[index] -= m_quadTree.accelAt(m_positions[index]) * DELTA_TIME;
+			});
+	else
+		std::for_each(std::execution::par_unseq, indices.begin(), indices.end(),
+			[&](const BodyIndex_t index)
+			{
+				m_velocities[index] += m_quadTree.accelAt(m_positions[index]) * DELTA_TIME;
+				m_positions[index] += m_velocities[index] * DELTA_TIME;
+			});
 
 	m_quadTree.buildTree();
 }
