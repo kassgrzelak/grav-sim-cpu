@@ -10,7 +10,7 @@
 #include <stack>
 #include <glm/gtx/norm.hpp>
 
-static constexpr float QUADTREE_RESERVE_MULTIPLIER = 4;
+static constexpr float QUADTREE_RESERVE_MULTIPLIER = 2.5f;
 static constexpr float PRECOMPUTED_BOUNDS_MIN_SIZE = 1.0f;
 
 static constexpr Color QUADTREE_VIS_FILL_COLOR = {0, 255, 255, 5};
@@ -79,7 +79,6 @@ void QuadTree::calculateBoundingSquare()
 	glm::vec2 min = {INFINITY, INFINITY};
 	glm::vec2 max = {-INFINITY, -INFINITY};
 
-	// TODO: Mutex and make this parallel?
 	for (const auto& position : *m_positions)
 	{
 		if (position.x < min.x)
@@ -130,8 +129,6 @@ NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, cons
 
 	m_nodeBodyIndices[result] = NULL_INDEX;
 	m_nodeIsLeaf[result] = false;
-
-	// TODO: Check for bodies in identical positions.
 
 	auto top  = [this, center](const BodyIndex_t index) { return (*m_positions)[index].y < center.y; };
 	auto left = [this, center](const BodyIndex_t index) { return (*m_positions)[index].x < center.x; };
