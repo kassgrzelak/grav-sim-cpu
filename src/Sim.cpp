@@ -5,15 +5,14 @@
 #include "Sim.hpp"
 
 #include <exception>
+#include <iostream>
 
 #include "BodyGenerator.hpp"
-
-static constexpr float CAMERA_SPEED = 400.0f;
 
 static constexpr float CAMERA_ZOOM_BUTTON_SPEED = 0.05f;
 static constexpr float CAMERA_ZOOM_SCROLL_SPEED = 0.15f;
 
-static constexpr float CAMERA_MAX_ZOOM = 3.0f;
+static constexpr float CAMERA_MAX_ZOOM = 8.0f;
 static constexpr float CAMERA_MIN_ZOOM = 0.3f;
 
 Sim::Sim() : m_quadTree(m_positions, m_masses), m_circleTex(), m_camera()
@@ -26,21 +25,28 @@ Sim::Sim() : m_quadTree(m_positions, m_masses), m_circleTex(), m_camera()
 	m_quadTree.buildTree();
 	initializeVelocities();
 
-	InitWindow(SCREEN_DIMS.x, SCREEN_DIMS.y, "CPU Gravity Simulation");
+	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+	InitWindow(static_cast<int>(g_screenDims.x), static_cast<int>(g_screenDims.y), "CPU Gravity Simulation");
 	SetTargetFPS(TARGET_FPS);
 
 	m_circleTex = LoadTexture("assets/circle.png");
 
-	m_camera.target = {SCREEN_CENTER.x, SCREEN_CENTER.y};
-	m_camera.offset = {SCREEN_CENTER.x, SCREEN_CENTER.y};
+	m_camera.target = {g_screenCenter.x, g_screenCenter.y};
+	m_camera.offset = {g_screenCenter.x, g_screenCenter.y};
 	m_camera.rotation = 0.0f;
 	m_camera.zoom = 1.0f;
+}
+
+Sim::~Sim()
+{
+	CloseWindow();
 }
 
 void Sim::run()
 {
 	while (!WindowShouldClose())
 	{
+		updateScreenDims();
 		takeInput();
 		if (!m_paused)
 			update();
@@ -54,23 +60,21 @@ void Sim::initializeVelocities()
 		m_velocities[i] += m_quadTree.accelAt(m_positions[i]) * DELTA_TIME * 0.5f;
 }
 
+void Sim::updateScreenDims()
+{
+	if (IsWindowResized())
+	{
+		g_screenDims.x = static_cast<float>(GetScreenWidth());
+		g_screenDims.y = static_cast<float>(GetScreenHeight());
+		g_screenCenter = g_screenDims / 2.0f;
+		m_camera.offset = {g_screenCenter.x, g_screenCenter.y};
+	}
+}
+
 void Sim::takeInput()
 {
-	const float dt = GetFrameTime();
-
 	// Camera.
 	{
-		const float sprintMultiplier = IsKeyDown(KEY_LEFT_SHIFT) ? 2.0f : 1.0f;
-
-		if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
-			m_camera.target.x -= sprintMultiplier * CAMERA_SPEED / m_camera.zoom * dt;
-		if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
-			m_camera.target.x += sprintMultiplier * CAMERA_SPEED / m_camera.zoom * dt;
-		if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W))
-			m_camera.target.y -= sprintMultiplier * CAMERA_SPEED / m_camera.zoom * dt;
-		if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S))
-			m_camera.target.y += sprintMultiplier * CAMERA_SPEED / m_camera.zoom * dt;
-
 		if (IsKeyDown(KEY_MINUS))
 			m_camera.zoom = expf(logf(m_camera.zoom) - CAMERA_ZOOM_BUTTON_SPEED);
 		if (IsKeyDown(KEY_EQUAL))

@@ -12,8 +12,8 @@ constexpr float THETA = 0.5f;
 constexpr float GRAV_CONST = 1.0f;
 constexpr float GRAV_SMOOTHNESS = 1.0f;
 
-constexpr glm::vec2 SCREEN_DIMS = {1600, 900};
-constexpr glm::vec2 SCREEN_CENTER = SCREEN_DIMS / 2.0f;
+inline glm::vec2 g_screenDims = {1600, 900};
+inline glm::vec2 g_screenCenter = g_screenDims / 2.0f;
 
 constexpr int TARGET_FPS = 60;
 constexpr float TIME_SCALE = 1.0f;

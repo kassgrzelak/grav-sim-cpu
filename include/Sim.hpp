@@ -15,6 +15,8 @@ class Sim
 {
 public:
 	Sim();
+	~Sim();
+
 	void run();
 
 private:
@@ -34,6 +36,7 @@ private:
 
 	void initializeVelocities();
 
+	void updateScreenDims();
 	void takeInput();
 	void update();
 	void draw() const;

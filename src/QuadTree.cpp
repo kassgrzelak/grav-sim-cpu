@@ -59,7 +59,7 @@ void QuadTree::calculateBoundingSquare()
 	glm::vec2 min = {INFINITY, INFINITY};
 	glm::vec2 max = {-INFINITY, -INFINITY};
 
-	// TODO: Mutex and make this parallel.
+	// TODO: Mutex and make this parallel?
 	for (const auto& pos : *m_positions)
 	{
 		if (pos.x < min.x)
@@ -112,6 +112,10 @@ NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, cons
 	const auto ySplit = std::partition(begin, end, top);
 	const auto xSplitUpper = std::partition(begin, ySplit, left);
 	const auto xSplitLower = std::partition(ySplit, end, left);
+
+	// Exit early if
+	if (xSplitUpper == begin && xSplitLower == end)
+		return result;
 
 	auto& [child1, child2, child3, child4] = m_nodes[result];
 	const float halfSize = size / 2.0f;
