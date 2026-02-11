@@ -9,15 +9,15 @@
 
 #include <vector>
 
+#include "Body.hpp"
+
 class BodyGenerator
 {
 public:
-	static void generateBodies(std::vector<glm::vec2>& positions, std::vector<glm::vec2>& velocities,
-		std::vector<float>& masses, std::vector<float>& diameters);
+	static void generateBodies(std::vector<Body>& bodies);
 
 private:
-	static void generateGalaxyBodies(std::vector<glm::vec2>& positions, std::vector<glm::vec2>& velocities,
-		std::vector<float>& masses, std::vector<float>& diameters);
+	static void generateGalaxyBodies(std::vector<Body>& bodies);
 };
 
 #endif //GRAV_SIM_CPU_BODY_GENERATOR_HPP

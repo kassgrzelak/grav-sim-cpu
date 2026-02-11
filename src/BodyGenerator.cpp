@@ -8,22 +8,17 @@
 #include <glm/gtx/norm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-void BodyGenerator::generateBodies(std::vector<glm::vec2>& positions, std::vector<glm::vec2>& velocities,
-		std::vector<float>& masses, std::vector<float>& diameters)
+void BodyGenerator::generateBodies(std::vector<Body>& bodies)
 {
 	switch (BODY_GENERATION)
 	{
-		case GenerationType::Galaxy: return generateGalaxyBodies(positions, velocities, masses, diameters);
+		case GenerationType::Galaxy: return generateGalaxyBodies(bodies);
 	}
 }
 
-void BodyGenerator::generateGalaxyBodies(std::vector<glm::vec2>& positions, std::vector<glm::vec2>& velocities,
-		std::vector<float>& masses, std::vector<float>& diameters)
+void BodyGenerator::generateGalaxyBodies(std::vector<Body>& bodies)
 {
-	positions.push_back(g_screenCenter);
-	velocities.emplace_back();
-	masses.push_back(GALAXY_CENTER_MASS);
-	diameters.push_back(GALAXY_CENTER_DIAMETER);
+	bodies.emplace_back(g_screenCenter, glm::vec2{0}, GALAXY_CENTER_MASS, GALAXY_CENTER_DIAMETER);
 
 	static constexpr float HALF_PACK_DISTANCE = GALAXY_PACK_DISTANCE / 2.0f;
 	static constexpr float OUTER_RADIUS_SQUARED = GALAXY_OUTER_RADIUS * GALAXY_OUTER_RADIUS;
@@ -48,14 +43,10 @@ void BodyGenerator::generateGalaxyBodies(std::vector<glm::vec2>& positions, std:
 
 			const float dist = sqrtf(sqrDist);
 			const glm::vec2 rel = glm::vec2{x, y} - g_screenCenter;
-			const float angle = atan2f(rel.y, rel.x);
 			const glm::vec2 tangent = glm::normalize(glm::vec2{-rel.y, rel.x});
 			const float orbitalSpeed = sqrtf(GRAV_CONST * GALAXY_CENTER_MASS / dist);
 
-			positions.emplace_back(x, y);
-			velocities.emplace_back(tangent * orbitalSpeed);
-			masses.push_back(GALAXY_OTHER_MASS);
-			diameters.push_back(GALAXY_OTHER_DIAMETER);
+			bodies.emplace_back(glm::vec2{x, y}, tangent * orbitalSpeed, GALAXY_OTHER_MASS, GALAXY_OTHER_DIAMETER);
 		}
 	}
 }

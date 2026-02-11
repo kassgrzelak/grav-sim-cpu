@@ -8,6 +8,7 @@
 #include <vector>
 #include <glm/vec2.hpp>
 
+#include "Body.hpp"
 #include "config.hpp"
 #include "QuadTree.hpp"
 
@@ -19,13 +20,9 @@ public:
 	void run();
 
 private:
-	std::vector<glm::vec2> m_positions = {};
-	std::vector<glm::vec2> m_velocities = {};
-	std::vector<float> m_masses = {};
-	std::vector<float> m_diameters = {};
+	std::vector<Body> m_bodies;
 
 	QuadTree m_quadTree;
-	size_t m_bodyNum;
 
 	Texture2D m_circleTex;
 	Camera2D m_camera;
