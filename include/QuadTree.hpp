@@ -33,15 +33,23 @@ private:
 		NodeIndex_t child2 = NULL_INDEX;
 		NodeIndex_t child3 = NULL_INDEX;
 		NodeIndex_t child4 = NULL_INDEX;
+
+		CoM com;
+		BodyIndex_t bodyIndex = NULL_INDEX;
+
+		[[nodiscard]] bool isLeaf() const
+		{
+			return child1 == NULL_INDEX &&
+				   child2 == NULL_INDEX &&
+				   child3 == NULL_INDEX &&
+				   child4 == NULL_INDEX;
+		}
 	};
 
 	std::vector<BodyIndex_t> m_indices;
 	const std::vector<Body>* m_bodies;
 
 	std::vector<Node> m_nodes;
-	std::vector<CoM> m_nodeComs;
-	std::vector<BodyIndex_t> m_nodeBodyIndices;
-	std::vector<uint8_t> m_nodeIsLeaf;
 
 	std::vector<float> m_precomputedBoundsSizes;
 

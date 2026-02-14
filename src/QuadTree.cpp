@@ -9,7 +9,7 @@
 #include <numeric>
 #include <glm/gtx/norm.hpp>
 
-static constexpr float QUADTREE_RESERVE_MULTIPLIER = 2.5f;
+static constexpr long double QUADTREE_RESERVE_MULTIPLIER = 2.5L;
 static constexpr float PRECOMPUTED_BOUNDS_MIN_SIZE = 1.0f;
 
 static constexpr Color QUADTREE_VIS_FILL_COLOR = {0, 255, 255, 5};
@@ -23,9 +23,6 @@ QuadTree::QuadTree(const std::vector<Body>& bodies)
 void QuadTree::buildTree()
 {
 	m_nodes.clear();
-	m_nodeComs.clear();
-	m_nodeBodyIndices.clear();
-	m_nodeIsLeaf.clear();
 	m_precomputedBoundsSizes.clear();
 	m_nodeCounter = 0;
 	m_boundsSize = 0;
@@ -39,9 +36,6 @@ void QuadTree::buildTree()
 
 	const auto reserveSize = static_cast<size_t>(QUADTREE_RESERVE_MULTIPLIER * m_bodies->size());
 	m_nodes.resize(reserveSize);
-	m_nodeComs.resize(reserveSize);
-	m_nodeBodyIndices.resize(reserveSize);
-	m_nodeIsLeaf.resize(reserveSize);
 
 	calculateBoundingSquare();
 
@@ -98,7 +92,7 @@ NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, cons
 		return NULL_INDEX;
 
 	const NodeIndex_t result = m_nodeCounter++;
-	CoM& com = m_nodeComs[result];
+	Node& node = m_nodes[result];
 	const long nodeLength = end - begin;
 
 	glm::vec2 momentSum = {};
@@ -111,18 +105,14 @@ NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, cons
 		massSum += mass;
 	}
 
-	com.position = momentSum / massSum;
-	com.mass = massSum;
+	node.com.position = momentSum / massSum;
+	node.com.mass = massSum;
 
 	if (nodeLength == 1)
 	{
-		m_nodeBodyIndices[result] = *begin;
-		m_nodeIsLeaf[result] = true;
+		node.bodyIndex = *begin;
 		return result;
 	}
-
-	m_nodeBodyIndices[result] = NULL_INDEX;
-	m_nodeIsLeaf[result] = false;
 
 	auto top  = [this, center](const BodyIndex_t index) { return (*m_bodies)[index].position.y < center.y; };
 	auto left = [this, center](const BodyIndex_t index) { return (*m_bodies)[index].position.x < center.x; };
@@ -131,17 +121,16 @@ NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, cons
 	const auto xSplitUpper = std::partition(begin, ySplit, left);
 	const auto xSplitLower = std::partition(ySplit, end, left);
 
-	auto& [child1, child2, child3, child4] = m_nodes[result];
 	const float halfSize = size / 2.0f;
 	const float quarterSize = halfSize / 2.0f;
 
-	child1 = buildTree(begin, xSplitUpper, halfSize,
+	node.child1 = buildTree(begin, xSplitUpper, halfSize,
 		{center.x - quarterSize, center.y - quarterSize});
-	child2 = buildTree(xSplitUpper, ySplit, halfSize,
+	node.child2 = buildTree(xSplitUpper, ySplit, halfSize,
 		{center.x + quarterSize, center.y - quarterSize});
-	child3 = buildTree(ySplit, xSplitLower, halfSize,
+	node.child3 = buildTree(ySplit, xSplitLower, halfSize,
 		{center.x - quarterSize, center.y + quarterSize});
-	child4 = buildTree(xSplitLower, end, halfSize,
+	node.child4 = buildTree(xSplitLower, end, halfSize,
 		{center.x + quarterSize, center.y + quarterSize});
 
 	return result;
@@ -169,18 +158,17 @@ static glm::vec2 gravAccel(const glm::vec2 rel, const float sqrDist, const float
 
 glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeIndex, const int depth) const
 {
-	const CoM& com = m_nodeComs[nodeIndex];
 	const Node& node = m_nodes[nodeIndex];
 
-	if (m_nodeIsLeaf[nodeIndex])
+	if (node.isLeaf())
 	{
-		if ((*m_bodies)[m_nodeBodyIndices[nodeIndex]].position == position)
+		if ((*m_bodies)[node.bodyIndex].position == position)
 			return {};
 
-		return gravAccel(position, com.position, com.mass);
+		return gravAccel(position, node.com.position, node.com.mass);
 	}
 
-	const glm::vec2 rel = com.position - position;
+	const glm::vec2 rel = node.com.position - position;
 	const float sqrDist = glm::length2(rel);
 
 	if (sqrDist == 0.0f)
@@ -191,7 +179,7 @@ glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeInde
 	const float sqrHeuristic = sqrBoundsSize / sqrDist;
 
 	if (sqrHeuristic < THETA * THETA)
-		return gravAccel(rel, sqrDist, com.mass);
+		return gravAccel(rel, sqrDist, node.com.mass);
 
 	glm::vec2 accelSum = {};
 
@@ -212,7 +200,7 @@ void QuadTree::visualize(const NodeIndex_t nodeIndex, const Rectangle rect, cons
 	DrawRectangleRec(rect, QUADTREE_VIS_FILL_COLOR);
 	const Node& node = m_nodes[nodeIndex];
 
-	if (m_nodeIsLeaf[nodeIndex])
+	if (node.isLeaf())
 	{
 		DrawRectangleLinesEx(rect, QUADTREE_VIS_LINE_THICKNESS / cameraZoom, QUADTREE_VIS_LEAF_OUTLINE_COLOR);
 		return;
