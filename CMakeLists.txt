@@ -39,6 +39,7 @@ add_executable(grav_sim_cpu main.cpp
         src/Sim.cpp
         include/QuadTree.hpp
         src/QuadTree.cpp
+        include/CoM.hpp
         include/common.hpp
         include/Body.hpp
 )
