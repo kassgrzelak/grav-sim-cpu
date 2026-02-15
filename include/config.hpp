@@ -10,7 +10,7 @@
 
 constexpr float THETA = 0.5f;
 constexpr float GRAV_CONST = 1.0f;
-constexpr float GRAV_SMOOTHNESS = 0.1f;
+constexpr float GRAV_SMOOTHNESS = 1.0f;
 
 inline glm::vec2 g_screenDims = {1600, 900};
 inline glm::vec2 g_screenCenter = g_screenDims / 2.0f;
