@@ -16,9 +16,12 @@ static constexpr float CAMERA_ZOOM_SCROLL_SPEED = 0.15f;
 static constexpr float CAMERA_MAX_ZOOM = 8.0f;
 static constexpr float CAMERA_MIN_ZOOM = 0.3f;
 
-Sim::Sim() : m_quadTree(m_bodies), m_circleTex(), m_camera()
+Sim::Sim() : m_quadTree(m_positions, m_masses), m_circleTex(), m_camera()
 {
-	BodyGenerator::generateBodies(m_bodies);
+	BodyGenerator::generateBodies(m_positions, m_velocities, m_masses, m_diameters);
+
+	assert(m_positions.size() == m_velocities.size() && m_velocities.size() == m_masses.size());
+	m_bodyNum = m_positions.size();
 
 	m_quadTree.buildTree();
 	initializeVelocities();
@@ -49,8 +52,8 @@ void Sim::run()
 
 void Sim::initializeVelocities()
 {
-	for (auto& body : m_bodies)
-		body.velocity += m_quadTree.accelAt(body.position) * DELTA_TIME * 0.5f;
+	for (BodyIndex_t i = 0; i < m_bodyNum; ++i)
+		m_velocities[i] += m_quadTree.accelAt(m_positions[i]) * DELTA_TIME * 0.5f;
 }
 
 void Sim::updateScreenDims()
@@ -119,29 +122,31 @@ void Sim::takeInput()
 
 void Sim::update()
 {
+	auto indices = m_quadTree.getIndices();
+
 	if (m_timeReverse)
 	{
-		std::for_each(std::execution::par, m_bodies.begin(), m_bodies.end(),
-		   [&](Body& body)
+		std::for_each(std::execution::par_unseq, indices.begin(), indices.end(),
+		   [&](const BodyIndex_t index)
 		   {
-			   body.position -= body.velocity * DELTA_TIME;
+			   m_positions[index] -= m_velocities[index] * DELTA_TIME;
 		   });
 
 		m_quadTree.buildTree();
 
-		std::for_each(std::execution::par, m_bodies.begin(), m_bodies.end(),
-		   [&](Body& body)
+		std::for_each(std::execution::par_unseq, indices.begin(), indices.end(),
+		   [&](const BodyIndex_t index)
 		   {
-			   body.velocity -= m_quadTree.accelAt(body.position) * DELTA_TIME;
+			   m_velocities[index] -= m_quadTree.accelAt(m_positions[index]) * DELTA_TIME;
 		   });
 	}
 	else
 	{
-		std::for_each(std::execution::par, m_bodies.begin(), m_bodies.end(),
-		   [&](Body& body)
+		std::for_each(std::execution::par_unseq, indices.begin(), indices.end(),
+		   [&](const BodyIndex_t index)
 		   {
-			   body.velocity += m_quadTree.accelAt(body.position) * DELTA_TIME;
-		   	   body.position += body.velocity * DELTA_TIME;
+			   m_velocities[index] += m_quadTree.accelAt(m_positions[index]) * DELTA_TIME;
+			   m_positions[index] += m_velocities[index] * DELTA_TIME;
 		   });
 
 		m_quadTree.buildTree();
@@ -155,14 +160,16 @@ void Sim::draw() const
 	ClearBackground(BLACK);
 
 	BeginMode2D(m_camera);
-	for (auto& body : m_bodies)
+	for (BodyIndex_t i = 0; i < m_bodyNum; ++i)
 	{
-		const float radius = body.diameter / 2.0f;
+		const glm::vec2 position = m_positions[i];
+		const float diameter = m_diameters[i];
+		const float radius = diameter / 2.0f;
 
 		DrawTexturePro(
 		   m_circleTex,
 		   { 0, 0, static_cast<float>(m_circleTex.width), static_cast<float>(m_circleTex.height) },
-		   { body.position.x, body.position.y, body.diameter, body.diameter },
+		   { position.x, position.y, diameter, diameter },
 		   { radius, radius },
 		   0.0f,
 		   BODY_COLOR
@@ -198,7 +205,7 @@ void Sim::drawDetails() const
 	DRAW_DETAIL("Timescale", TIME_SCALE);
 	DRAW_DETAIL("Target FPS", TARGET_FPS);
 	DRAW_DETAIL("Theta", THETA);
-	DRAW_DETAIL("N", m_bodies.size());
+	DRAW_DETAIL("N", m_bodyNum);
 
 #undef DRAW_DETAIL
 }

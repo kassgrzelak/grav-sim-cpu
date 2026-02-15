@@ -41,7 +41,6 @@ add_executable(grav_sim_cpu main.cpp
         src/QuadTree.cpp
         include/CoM.hpp
         include/common.hpp
-        include/Body.hpp
 )
 target_link_libraries(grav_sim_cpu PRIVATE
     raylib

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
+#include <stack>
 #include <glm/gtx/norm.hpp>
 
 static constexpr float QUADTREE_RESERVE_MULTIPLIER = 2.5f;
@@ -17,8 +18,8 @@ static constexpr Color QUADTREE_VIS_OUTLINE_COLOR = {255, 255, 255, 50};
 static constexpr Color QUADTREE_VIS_LEAF_OUTLINE_COLOR = RED;
 static constexpr float QUADTREE_VIS_LINE_THICKNESS = 1.0f;
 
-QuadTree::QuadTree(const std::vector<Body>& bodies)
-	: m_bodies(&bodies) { }
+QuadTree::QuadTree(const std::vector<glm::vec2>& positions, const std::vector<float>& masses)
+	: m_positions(&positions), m_masses(&masses) { }
 
 void QuadTree::buildTree()
 {
@@ -33,11 +34,11 @@ void QuadTree::buildTree()
 
 	if (m_indices.empty())
 	{
-		m_indices.resize(m_bodies->size());
+		m_indices.resize(m_positions->size());
 		std::iota(m_indices.begin(), m_indices.end(), 0);
 	}
 
-	const auto reserveSize = static_cast<size_t>(QUADTREE_RESERVE_MULTIPLIER * m_bodies->size());
+	const auto reserveSize = static_cast<size_t>(QUADTREE_RESERVE_MULTIPLIER * m_positions->size());
 	m_nodes.resize(reserveSize);
 	m_nodeComs.resize(reserveSize);
 	m_nodeBodyIndices.resize(reserveSize);
@@ -53,6 +54,11 @@ void QuadTree::buildTree()
 		m_precomputedBoundsSizes.push_back(precomputedBoundsSize);
 		precomputedBoundsSize /= 2;
 	}
+}
+
+const std::vector<BodyIndex_t>& QuadTree::getIndices() const
+{
+	return m_indices;
 }
 
 glm::vec2 QuadTree::accelAt(const glm::vec2 position) const
@@ -73,16 +79,16 @@ void QuadTree::calculateBoundingSquare()
 	glm::vec2 min = {INFINITY, INFINITY};
 	glm::vec2 max = {-INFINITY, -INFINITY};
 
-	for (const auto& body : *m_bodies)
+	for (const auto& position : *m_positions)
 	{
-		if (body.position.x < min.x)
-			min.x = body.position.x;
-		if (body.position.x > max.x)
-			max.x = body.position.x;
-		if (body.position.y < min.y)
-			min.y = body.position.y;
-		if (body.position.y > max.y)
-			max.y = body.position.y;
+		if (position.x < min.x)
+			min.x = position.x;
+		if (position.x > max.x)
+			max.x = position.x;
+		if (position.y < min.y)
+			min.y = position.y;
+		if (position.y > max.y)
+			max.y = position.y;
 	}
 
 	const float width = max.x - min.x;
@@ -106,8 +112,8 @@ NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, cons
 
 	for (auto it = begin; it != end; ++it)
 	{
-		const float mass = (*m_bodies)[*it].mass;
-		momentSum += (*m_bodies)[*it].position * mass;
+		const float mass = (*m_masses)[*it];
+		momentSum += (*m_positions)[*it] * mass;
 		massSum += mass;
 	}
 
@@ -124,8 +130,8 @@ NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, cons
 	m_nodeBodyIndices[result] = NULL_INDEX;
 	m_nodeIsLeaf[result] = false;
 
-	auto top  = [this, center](const BodyIndex_t index) { return (*m_bodies)[index].position.y < center.y; };
-	auto left = [this, center](const BodyIndex_t index) { return (*m_bodies)[index].position.x < center.x; };
+	auto top  = [this, center](const BodyIndex_t index) { return (*m_positions)[index].y < center.y; };
+	auto left = [this, center](const BodyIndex_t index) { return (*m_positions)[index].x < center.x; };
 
 	const auto ySplit = std::partition(begin, end, top);
 	const auto xSplitUpper = std::partition(begin, ySplit, left);
@@ -174,7 +180,7 @@ glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeInde
 
 	if (m_nodeIsLeaf[nodeIndex])
 	{
-		if ((*m_bodies)[m_nodeBodyIndices[nodeIndex]].position == position)
+		if ((*m_positions)[m_nodeBodyIndices[nodeIndex]] == position)
 			return {};
 
 		return gravAccel(position, com.position, com.mass);

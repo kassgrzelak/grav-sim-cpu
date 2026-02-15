@@ -7,7 +7,6 @@
 #include <vector>
 #include <glm/vec2.hpp>
 
-#include "Body.hpp"
 #include "CoM.hpp"
 #include "common.hpp"
 #include "config.hpp"
@@ -18,9 +17,11 @@ static constexpr NodeIndex_t NULL_INDEX = -1;
 class QuadTree
 {
 public:
-	QuadTree(const std::vector<Body>& bodies);
+	QuadTree(const std::vector<glm::vec2>& positions, const std::vector<float>& masses);
 
 	void buildTree();
+
+	[[nodiscard]] const std::vector<BodyIndex_t>& getIndices() const;
 
 	[[nodiscard]] glm::vec2 accelAt(glm::vec2 position) const;
 
@@ -36,7 +37,8 @@ private:
 	};
 
 	std::vector<BodyIndex_t> m_indices;
-	const std::vector<Body>* m_bodies;
+	const std::vector<glm::vec2>* m_positions;
+	const std::vector<float>* m_masses;
 
 	std::vector<Node> m_nodes;
 	std::vector<CoM> m_nodeComs;
@@ -53,7 +55,7 @@ private:
 
 	NodeIndex_t buildTree(IndexIt_t begin, IndexIt_t end, float size, glm::vec2 center);
 
-	[[nodiscard]] glm::vec2 accelAt(glm::vec2 position, NodeIndex_t nodeIndex, int depth) const;
+	glm::vec2 accelAt(glm::vec2 position, NodeIndex_t nodeIndex, int depth) const;
 
 	void visualize(NodeIndex_t nodeIndex, Rectangle rect, float cameraZoom) const;
 };
