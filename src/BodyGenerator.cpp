@@ -48,7 +48,6 @@ void BodyGenerator::generateGalaxyBodies(std::vector<glm::vec2>& positions, std:
 
 			const float dist = sqrtf(sqrDist);
 			const glm::vec2 rel = glm::vec2{x, y} - g_screenCenter;
-			const float angle = atan2f(rel.y, rel.x);
 			const glm::vec2 tangent = glm::normalize(glm::vec2{-rel.y, rel.x});
 			const float orbitalSpeed = sqrtf(GRAV_CONST * GALAXY_CENTER_MASS / dist);
 

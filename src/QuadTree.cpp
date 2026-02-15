@@ -10,7 +10,7 @@
 #include <stack>
 #include <glm/gtx/norm.hpp>
 
-static constexpr float QUADTREE_RESERVE_MULTIPLIER = 2.5f;
+static constexpr long double QUADTREE_RESERVE_MULTIPLIER = 2.5L;
 static constexpr float PRECOMPUTED_BOUNDS_MIN_SIZE = 1.0f;
 
 static constexpr Color QUADTREE_VIS_FILL_COLOR = {0, 255, 255, 5};
@@ -24,7 +24,7 @@ QuadTree::QuadTree(const std::vector<glm::vec2>& positions, const std::vector<fl
 void QuadTree::buildTree()
 {
 	m_nodes.clear();
-	m_nodeComs.clear();
+	m_nodeCoMs.clear();
 	m_nodeBodyIndices.clear();
 	m_nodeIsLeaf.clear();
 	m_precomputedBoundsSizes.clear();
@@ -40,7 +40,7 @@ void QuadTree::buildTree()
 
 	const auto reserveSize = static_cast<size_t>(QUADTREE_RESERVE_MULTIPLIER * m_positions->size());
 	m_nodes.resize(reserveSize);
-	m_nodeComs.resize(reserveSize);
+	m_nodeCoMs.resize(reserveSize);
 	m_nodeBodyIndices.resize(reserveSize);
 	m_nodeIsLeaf.resize(reserveSize);
 
@@ -104,7 +104,7 @@ NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, cons
 		return NULL_INDEX;
 
 	const NodeIndex_t result = m_nodeCounter++;
-	CoM& com = m_nodeComs[result];
+	CoM& com = m_nodeCoMs[result];
 	const long nodeLength = end - begin;
 
 	glm::vec2 momentSum = {};
@@ -175,7 +175,7 @@ static glm::vec2 gravAccel(const glm::vec2 rel, const float sqrDist, const float
 
 glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeIndex, const int depth) const
 {
-	const CoM& com = m_nodeComs[nodeIndex];
+	const CoM& com = m_nodeCoMs[nodeIndex];
 	const Node& node = m_nodes[nodeIndex];
 
 	if (m_nodeIsLeaf[nodeIndex])

@@ -41,7 +41,7 @@ private:
 	const std::vector<float>* m_masses;
 
 	std::vector<Node> m_nodes;
-	std::vector<CoM> m_nodeComs;
+	std::vector<CoM> m_nodeCoMs;
 	std::vector<BodyIndex_t> m_nodeBodyIndices;
 	std::vector<uint8_t> m_nodeIsLeaf;
 
@@ -55,7 +55,7 @@ private:
 
 	NodeIndex_t buildTree(IndexIt_t begin, IndexIt_t end, float size, glm::vec2 center);
 
-	glm::vec2 accelAt(glm::vec2 position, NodeIndex_t nodeIndex, int depth) const;
+	[[nodiscard]] glm::vec2 accelAt(glm::vec2 position, NodeIndex_t nodeIndex, int depth) const;
 
 	void visualize(NodeIndex_t nodeIndex, Rectangle rect, float cameraZoom) const;
 };
