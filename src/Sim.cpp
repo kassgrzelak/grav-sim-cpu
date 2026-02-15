@@ -13,8 +13,8 @@
 static constexpr float CAMERA_ZOOM_BUTTON_SPEED = 0.05f;
 static constexpr float CAMERA_ZOOM_SCROLL_SPEED = 0.15f;
 
-static constexpr float CAMERA_MAX_ZOOM = 12.0f;
-static constexpr float CAMERA_MIN_ZOOM = 0.1f;
+static constexpr float CAMERA_MAX_ZOOM = 8.0f;
+static constexpr float CAMERA_MIN_ZOOM = 0.3f;
 
 Sim::Sim() : m_quadTree(m_bodies), m_circleTex(), m_camera()
 {
