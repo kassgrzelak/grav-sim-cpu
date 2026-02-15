@@ -121,7 +121,7 @@ void Sim::update()
 {
 	if (m_timeReverse)
 	{
-		std::for_each(std::execution::par_unseq, m_bodies.begin(), m_bodies.end(),
+		std::for_each(std::execution::par, m_bodies.begin(), m_bodies.end(),
 		   [&](Body& body)
 		   {
 			   body.position -= body.velocity * DELTA_TIME;
@@ -129,7 +129,7 @@ void Sim::update()
 
 		m_quadTree.buildTree();
 
-		std::for_each(std::execution::par_unseq, m_bodies.begin(), m_bodies.end(),
+		std::for_each(std::execution::par, m_bodies.begin(), m_bodies.end(),
 		   [&](Body& body)
 		   {
 			   body.velocity -= m_quadTree.accelAt(body.position) * DELTA_TIME;
@@ -137,7 +137,7 @@ void Sim::update()
 	}
 	else
 	{
-		std::for_each(std::execution::par_unseq, m_bodies.begin(), m_bodies.end(),
+		std::for_each(std::execution::par, m_bodies.begin(), m_bodies.end(),
 		   [&](Body& body)
 		   {
 			   body.velocity += m_quadTree.accelAt(body.position) * DELTA_TIME;

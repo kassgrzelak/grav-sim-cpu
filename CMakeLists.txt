@@ -4,23 +4,15 @@ set(CMAKE_CXX_STANDARD 26)
 
 if (CMAKE_BUILD_TYPE MATCHES Release)
     message(STATUS "Hi!")
-    set(CMAKE_CXX_FLAGS "-O3 -march=native -mtune=native -g")
+    set(CMAKE_CXX_FLAGS "-O3 -march=native -mtune=native")
 endif()
 
 include(FetchContent)
 
 find_package(raylib)
-if (NOT raylib_FOUND)
-    message(STATUS "Fetching Raylib...")
-    FetchContent_Declare(
-            raylib
-            GIT_REPOSITORY https://github.com/raysan5/raylib.git
-            GIT_TAG 5.5
-    )
-endif()
 
-find_package(glm)
-if(NOT glm_FOUND)
+find_package(glm CONFIG QUIET)
+if(NOT glm_FOUND AND GAL_FETCH_DEPENDENCIES)
     message(STATUS "Fetching GLM...")
     FetchContent_Declare(
             glm
@@ -29,8 +21,6 @@ if(NOT glm_FOUND)
     )
     FetchContent_MakeAvailable(glm)
 endif()
-
-find_package(TBB REQUIRED)
 
 # Normalize GLM target
 if(TARGET glm::glm)
@@ -55,7 +45,6 @@ add_executable(grav_sim_cpu main.cpp
 target_link_libraries(grav_sim_cpu PRIVATE
     raylib
     ${GLM_TARGET}
-    TBB::tbb
 )
 target_include_directories(grav_sim_cpu PRIVATE
     include
