@@ -1,15 +1,14 @@
-cmake_minimum_required(VERSION 4.1)
+cmake_minimum_required(VERSION 3.20)
 project(grav_sim_cpu)
 set(CMAKE_CXX_STANDARD 26)
 
 if (CMAKE_BUILD_TYPE MATCHES Release)
-    message(STATUS "Hi!")
-    set(CMAKE_CXX_FLAGS "-O3 -march=native -mtune=native -g")
+    add_compile_options(-O3 -march=native -mtune=native)
 endif()
 
 include(FetchContent)
 
-find_package(raylib)
+find_package(raylib QUIET)
 if (NOT raylib_FOUND)
     message(STATUS "Fetching Raylib...")
     FetchContent_Declare(
@@ -17,9 +16,10 @@ if (NOT raylib_FOUND)
             GIT_REPOSITORY https://github.com/raysan5/raylib.git
             GIT_TAG 5.5
     )
+    FetchContent_MakeAvailable(raylib)
 endif()
 
-find_package(glm)
+find_package(glm QUIET)
 if(NOT glm_FOUND)
     message(STATUS "Fetching GLM...")
     FetchContent_Declare(
@@ -30,7 +30,16 @@ if(NOT glm_FOUND)
     FetchContent_MakeAvailable(glm)
 endif()
 
-find_package(TBB REQUIRED)
+find_package(TBB QUIET)
+if(NOT TBB_FOUND)
+    message(STATUS "Fetching TBB...")
+    FetchContent_Declare(
+            oneTBB
+            GIT_REPOSITORY https://github.com/oneapi-src/oneTBB.git
+            GIT_TAG v2021.11.0
+    )
+    FetchContent_MakeAvailable(oneTBB)
+endif()
 
 # Normalize GLM target
 if(TARGET glm::glm)
