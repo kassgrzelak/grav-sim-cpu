@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <execution>
 #include <format>
+#include <glm/gtx/norm.hpp>
 
 #include "BodyGenerator.hpp"
 
@@ -122,7 +123,7 @@ void Sim::takeInput()
 
 void Sim::update()
 {
-	auto indices = m_quadTree.getIndices();
+	const auto& indices = m_quadTree.getIndices();
 
 	if (m_timeReverse)
 	{
