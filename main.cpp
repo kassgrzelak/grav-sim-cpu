@@ -1,5 +1,6 @@
 #include "Sim.hpp"
 
+// TODO: Take path of generation config file as command line argument.
 int main()
 {
 	Sim sim;
