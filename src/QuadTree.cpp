@@ -60,6 +60,11 @@ const std::vector<BodyIndex_t>& QuadTree::getIndices() const
 	return m_indices;
 }
 
+glm::vec2 QuadTree::getSystemCoMPosition() const
+{
+	return m_nodeCoMs[0].position;
+}
+
 glm::vec2 QuadTree::accelAt(const glm::vec2 position) const
 {
 	return accelAt(position, 0, 0);

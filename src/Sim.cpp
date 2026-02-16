@@ -100,6 +100,13 @@ void Sim::takeInput()
 			m_camera.target.y -= dy / m_camera.zoom;
 		}
 
+		if (IsKeyPressed(KEY_F))
+		{
+			const glm::vec2 CoMPosition = m_quadTree.getSystemCoMPosition();
+			m_camera.target.x = CoMPosition.x;
+			m_camera.target.y = CoMPosition.y;
+		}
+
 		if (m_camera.zoom > CAMERA_MAX_ZOOM)
 			m_camera.zoom = CAMERA_MAX_ZOOM;
 		if (m_camera.zoom < CAMERA_MIN_ZOOM)
@@ -222,6 +229,7 @@ void Sim::drawControls()
 	DRAW_CONTROL("Q", "Quadtree visualization");
 	DRAW_CONTROL("R", "Reverse time");
 	DRAW_CONTROL("D", "Show sim details");
+	DRAW_CONTROL("F", "Focus on system CoM");
 	DRAW_CONTROL("Space or P", "Pause");
 	DRAW_CONTROL("Scroll or +/-", "Zoom");
 	DRAW_CONTROL("Click and drag", "Pan");

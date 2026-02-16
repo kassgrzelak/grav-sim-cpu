@@ -22,6 +22,7 @@ public:
 	void buildTree();
 
 	[[nodiscard]] const std::vector<BodyIndex_t>& getIndices() const;
+	[[nodiscard]] glm::vec2 getSystemCoMPosition() const;
 
 	[[nodiscard]] glm::vec2 accelAt(glm::vec2 position) const;
 
