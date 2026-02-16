@@ -27,10 +27,21 @@ private:
 		float centerDiameter;
 		float outerMass;
 		float outerDiameter;
-		bool oppositeSpin;
+		bool counterClockwise;
 	};
 
 	static void generateGalaxyBodies(const GalaxyParams& params, std::vector<glm::vec2>& positions,
+		std::vector<glm::vec2>& velocities, std::vector<float>& masses, std::vector<float>& diameters);
+
+	struct SingleParams
+	{
+		glm::vec2 position;
+		glm::vec2 velocity;
+		float mass;
+		float diameter;
+	};
+
+	static void generateSingleBody(const SingleParams& params, std::vector<glm::vec2>& positions,
 		std::vector<glm::vec2>& velocities, std::vector<float>& masses, std::vector<float>& diameters);
 };
 

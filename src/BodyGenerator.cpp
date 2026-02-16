@@ -80,6 +80,28 @@ void BodyGenerator::generateBodies(std::vector<glm::vec2>& positions, std::vecto
 
 			generateGalaxyBodies(params, positions, velocities, masses, diameters);
 		}
+		else if (generationType == "SINGLE")
+		{
+			float positionX;
+			float positionY;
+			ss >> positionX >> positionY;
+			glm::vec2 position = {positionX, positionY};
+
+			float velocityX;
+			float velocityY;
+			ss >> velocityX >> velocityY;
+			glm::vec2 velocity = {velocityX, velocityY};
+
+			float mass;
+			ss >> mass;
+
+			float diameter;
+			ss >> diameter;
+
+			SingleParams params{position, velocity, mass, diameter};
+
+			generateSingleBody(params, positions, velocities, masses, diameters);
+		}
 		else
 		{
 			throw std::runtime_error(std::format("Unknown generation type '{}' on line {}", generationType, lineNum));
@@ -122,7 +144,7 @@ void BodyGenerator::generateGalaxyBodies(const GalaxyParams& params, std::vector
 			const float dist = sqrtf(sqrDist);
 			const glm::vec2 rel = glm::vec2{x, y} - centerPosition;
 			const glm::vec2 tangent = glm::normalize(glm::vec2{-rel.y, rel.x});
-			const float orbitalSpeed = (params.oppositeSpin ? 1.0f : -1.0f) * sqrtf(GRAV_CONST * params.centerMass / dist);
+			const float orbitalSpeed = (params.counterClockwise ? 1.0f : -1.0f) * sqrtf(GRAV_CONST * params.centerMass / dist);
 
 			positions.emplace_back(x, y);
 			velocities.emplace_back(tangent * orbitalSpeed + params.velocity);
@@ -130,4 +152,13 @@ void BodyGenerator::generateGalaxyBodies(const GalaxyParams& params, std::vector
 			diameters.push_back(params.outerDiameter);
 		}
 	}
+}
+
+void BodyGenerator::generateSingleBody(const SingleParams& params, std::vector<glm::vec2>& positions,
+	std::vector<glm::vec2>& velocities, std::vector<float>& masses, std::vector<float>& diameters)
+{
+	positions.push_back(params.position);
+	velocities.push_back(params.velocity);
+	masses.push_back(params.mass);
+	diameters.push_back(params.diameter);
 }
