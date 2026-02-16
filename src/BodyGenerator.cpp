@@ -69,8 +69,6 @@ void BodyGenerator::generateBodies(std::vector<glm::vec2>& positions, std::vecto
 			bool oppositeSpin;
 			ss >> oppositeSpin;
 
-			std::cout << oppositeSpin << "\n";
-
 			if (ss.fail())
 				throw std::runtime_error(std::format("Failed reading parameters on line {}. Check you have "
 					"the right type/number of parameters.", lineNum));
