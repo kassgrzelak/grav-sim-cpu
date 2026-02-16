@@ -113,9 +113,7 @@ void BodyGenerator::generateGalaxyBodies(const GalaxyParams& params, std::vector
 	std::vector<glm::vec2>& velocities,
 	std::vector<float>& masses, std::vector<float>& diameters)
 {
-	const glm::vec2 centerPosition = g_screenCenter + params.position;
-
-	positions.push_back(centerPosition);
+	positions.push_back(params.position);
 	velocities.emplace_back(params.velocity);
 	masses.push_back(params.centerMass);
 	diameters.push_back(params.centerDiameter);
@@ -127,22 +125,22 @@ void BodyGenerator::generateGalaxyBodies(const GalaxyParams& params, std::vector
 	const float h = sqrtf(3.0f) * halfPackDistance;
 	float offset = 0.0f;
 
-	for (float y = centerPosition.y - params.outerRadius; y < centerPosition.y + params.outerRadius; y += h)
+	for (float y = params.position.y - params.outerRadius; y < params.position.y + params.outerRadius; y += h)
 	{
 		if (offset == 0.0f)
 			offset = halfPackDistance;
 		else
 			offset = 0.0f;
 
-		for (float x = centerPosition.x - params.outerRadius + offset; x < centerPosition.x + params.outerRadius;
+		for (float x = params.position.x - params.outerRadius + offset; x < params.position.x + params.outerRadius;
 			x += params.packDistance)
 		{
-			const float sqrDist = glm::distance2(centerPosition, glm::vec2{x, y});
+			const float sqrDist = glm::distance2(params.position, glm::vec2{x, y});
 			if (sqrDist > outerRadiusSquared || sqrDist < innerRadiusSquared)
 				continue;
 
 			const float dist = sqrtf(sqrDist);
-			const glm::vec2 rel = glm::vec2{x, y} - centerPosition;
+			const glm::vec2 rel = glm::vec2{x, y} - params.position;
 			const glm::vec2 tangent = glm::normalize(glm::vec2{-rel.y, rel.x});
 			const float orbitalSpeed = (params.counterClockwise ? 1.0f : -1.0f) * sqrtf(GRAV_CONST * params.centerMass / dist);
 

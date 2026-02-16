@@ -33,7 +33,7 @@ Sim::Sim() : m_quadTree(m_positions, m_masses), m_circleTex(), m_camera()
 
 	m_circleTex = LoadTexture("assets/circle.png");
 
-	m_camera.target = {g_screenCenter.x, g_screenCenter.y};
+	m_camera.target = {0, 0};
 	m_camera.offset = {g_screenCenter.x, g_screenCenter.y};
 	m_camera.rotation = 0.0f;
 	m_camera.zoom = 1.0f;
