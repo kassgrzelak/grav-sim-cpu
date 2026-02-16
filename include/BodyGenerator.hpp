@@ -9,23 +9,6 @@
 
 #include <vector>
 
-// constexpr float GALAXY_OUTER_RADIUS = 500.0f;
-// constexpr float GALAXY_INNER_RADIUS = 200.0f;
-// constexpr float GALAXY_PACK_DISTANCE = 8.4f;
-// constexpr float GALAXY_CENTER_MASS = 1e7f;
-// constexpr float GALAXY_CENTER_DIAMETER = 20.0f;
-// constexpr float GALAXY_OTHER_MASS = 10.0f;
-//
-// enum class GenerationType
-// {
-// 	Galaxy, // Spawn bodies evenly in a ring around a central mass.
-// };
-//
-// constexpr auto BODY_GENERATION = GenerationType::Galaxy;
-// constexpr float GALAXY_OTHER_DIAMETER = 2.0f;
-
-// TODO: config file, read at startup to spawn bodies according to config file
-
 class BodyGenerator
 {
 public:
