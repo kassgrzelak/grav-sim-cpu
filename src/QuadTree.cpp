@@ -180,7 +180,6 @@ static glm::vec2 gravAccel(const glm::vec2 rel, const float sqrDist, const float
 glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeIndex, const int depth) const
 {
 	const CoM& com = m_nodeCoMs[nodeIndex];
-	const Node& node = m_nodes[nodeIndex];
 
 	if (m_nodeIsLeaf[nodeIndex])
 	{
@@ -203,6 +202,7 @@ glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeInde
 	if (sqrHeuristic < THETA * THETA)
 		return gravAccel(rel, sqrDist, com.mass);
 
+	const Node& node = m_nodes[nodeIndex];
 	glm::vec2 accelSum = {};
 
 	if (node.child1 != NULL_INDEX)
