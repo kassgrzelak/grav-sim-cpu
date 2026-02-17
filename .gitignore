@@ -1,1 +1,6 @@
+# Jetbrains IDE settings.
 .idea/
+
+# Development config files.
+dev-generation.cfg
+dev-simulation.cfg
