@@ -8,7 +8,7 @@
 #include <vector>
 #include <glm/vec2.hpp>
 
-#include "config.hpp"
+#include "parameters.hpp"
 #include "QuadTree.hpp"
 
 class Sim
@@ -44,7 +44,7 @@ private:
 	void draw() const;
 
 	void drawDetails() const;
-	static void drawControls() ;
+	void drawControls() const;
 
 	static void drawTextRJust(const char* text, int x, int y, int fontSize, Color color);
 };

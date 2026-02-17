@@ -167,14 +167,14 @@ static glm::vec2 gravAccel(const glm::vec2 position, const glm::vec2 sourcePosit
 
 	const glm::vec2 dir = rel / sqrtf(sqrDist);
 
-	return dir * GRAV_CONST * sourceMass / (GRAV_SMOOTHNESS + sqrDist);
+	return dir * g_gravConst * sourceMass / (g_gravSmoothness + sqrDist);
 }
 
 static glm::vec2 gravAccel(const glm::vec2 rel, const float sqrDist, const float sourceMass)
 {
 	const glm::vec2 dir = rel / sqrtf(sqrDist);
 
-	return dir * GRAV_CONST * sourceMass / (GRAV_SMOOTHNESS + sqrDist);
+	return dir * g_gravConst * sourceMass / (g_gravSmoothness + sqrDist);
 }
 
 glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeIndex, const int depth) const
@@ -199,7 +199,7 @@ glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeInde
 	const float sqrBoundsSize = boundsSize * boundsSize;
 	const float sqrHeuristic = sqrBoundsSize / sqrDist;
 
-	if (sqrHeuristic < THETA * THETA)
+	if (sqrHeuristic < g_theta * g_theta)
 		return gravAccel(rel, sqrDist, com.mass);
 
 	const Node& node = m_nodes[nodeIndex];

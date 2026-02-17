@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <execution>
 #include <format>
+#include <fstream>
+#include <sstream>
 #include <glm/gtx/norm.hpp>
 
 #include "BodyGenerator.hpp"
@@ -27,14 +29,15 @@ Sim::Sim(const char* generationPath) : m_quadTree(m_positions, m_masses), m_circ
 	m_quadTree.buildTree();
 	initializeVelocities();
 
-	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+	if (g_resizable)
+		SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(static_cast<int>(g_screenDims.x), static_cast<int>(g_screenDims.y), "CPU Gravity Simulation");
-	SetTargetFPS(TARGET_FPS);
+	SetTargetFPS(g_targetFPS);
 
 	m_circleTex = LoadTexture("assets/circle.png");
 
 	m_camera.target = {0, 0};
-	m_camera.offset = {g_screenCenter.x, g_screenCenter.y};
+	m_camera.offset = {g_screenDims.x / 2.0f, g_screenDims.y / 2.0f};
 	m_camera.rotation = 0.0f;
 	m_camera.zoom = 1.0f;
 }
@@ -54,7 +57,7 @@ void Sim::run()
 void Sim::initializeVelocities()
 {
 	for (BodyIndex_t i = 0; i < m_bodyNum; ++i)
-		m_velocities[i] += m_quadTree.accelAt(m_positions[i]) * DELTA_TIME * 0.5f;
+		m_velocities[i] += m_quadTree.accelAt(m_positions[i]) * g_deltaTime * 0.5f;
 }
 
 void Sim::updateScreenDims()
@@ -63,8 +66,7 @@ void Sim::updateScreenDims()
 	{
 		g_screenDims.x = static_cast<float>(GetScreenWidth());
 		g_screenDims.y = static_cast<float>(GetScreenHeight());
-		g_screenCenter = g_screenDims / 2.0f;
-		m_camera.offset = {g_screenCenter.x, g_screenCenter.y};
+		m_camera.offset = {g_screenDims.x / 2.0f, g_screenDims.y / 2.0f};
 	}
 }
 
@@ -137,7 +139,7 @@ void Sim::update()
 		std::for_each(std::execution::par_unseq, indices.begin(), indices.end(),
 		   [&](const BodyIndex_t index)
 		   {
-			   m_positions[index] -= m_velocities[index] * DELTA_TIME;
+			   m_positions[index] -= m_velocities[index] * g_deltaTime;
 		   });
 
 		m_quadTree.buildTree();
@@ -145,7 +147,7 @@ void Sim::update()
 		std::for_each(std::execution::par_unseq, indices.begin(), indices.end(),
 		   [&](const BodyIndex_t index)
 		   {
-			   m_velocities[index] -= m_quadTree.accelAt(m_positions[index]) * DELTA_TIME;
+			   m_velocities[index] -= m_quadTree.accelAt(m_positions[index]) * g_deltaTime;
 		   });
 	}
 	else
@@ -153,8 +155,8 @@ void Sim::update()
 		std::for_each(std::execution::par_unseq, indices.begin(), indices.end(),
 		   [&](const BodyIndex_t index)
 		   {
-			   m_velocities[index] += m_quadTree.accelAt(m_positions[index]) * DELTA_TIME;
-			   m_positions[index] += m_velocities[index] * DELTA_TIME;
+			   m_velocities[index] += m_quadTree.accelAt(m_positions[index]) * g_deltaTime;
+			   m_positions[index] += m_velocities[index] * g_deltaTime;
 		   });
 
 		m_quadTree.buildTree();
@@ -180,7 +182,7 @@ void Sim::draw() const
 		   { position.x, position.y, diameter, diameter },
 		   { radius, radius },
 		   0.0f,
-		   BODY_COLOR
+		   g_bodyColor
 	   );
 	}
 
@@ -209,16 +211,16 @@ void Sim::drawDetails() const
 	DrawText(std::format("{} = {}", name, value).c_str(), \
 		5, static_cast<int>(g_screenDims.y - (y += 20)), 20, WHITE)
 
-	DRAW_DETAIL("Delta time", DELTA_TIME);
-	DRAW_DETAIL("Timescale", TIME_SCALE);
-	DRAW_DETAIL("Target FPS", TARGET_FPS);
-	DRAW_DETAIL("Theta", THETA);
+	DRAW_DETAIL("Delta time", g_deltaTime);
+	DRAW_DETAIL("Timescale", g_timeScale);
+	DRAW_DETAIL("Target FPS", g_targetFPS);
+	DRAW_DETAIL("Theta", g_theta);
 	DRAW_DETAIL("N", m_bodyNum);
 
 #undef DRAW_DETAIL
 }
 
-void Sim::drawControls()
+void Sim::drawControls() const
 {
 	int y = 5;
 

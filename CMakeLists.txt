@@ -51,7 +51,7 @@ else()
 endif()
 
 add_executable(grav_sim_cpu main.cpp
-        include/config.hpp
+        include/parameters.hpp
         include/Sim.hpp
         include/BodyGenerator.hpp
         src/BodyGenerator.cpp
@@ -59,6 +59,7 @@ add_executable(grav_sim_cpu main.cpp
         include/QuadTree.hpp
         src/QuadTree.cpp
         include/common.hpp
+        src/parameters.cpp
 )
 target_link_libraries(grav_sim_cpu PRIVATE
         raylib

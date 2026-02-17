@@ -9,7 +9,7 @@
 
 #include "CoM.hpp"
 #include "common.hpp"
-#include "config.hpp"
+#include "parameters.hpp"
 
 using NodeIndex_t = uint32_t;
 static constexpr NodeIndex_t NULL_INDEX = -1;

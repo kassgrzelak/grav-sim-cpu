@@ -101,22 +101,20 @@ void BodyGenerator::generateBodies(const char* generationPath, std::vector<glm::
 			bool oppositeSpin;
 			ss >> oppositeSpin;
 
-			if (ss.fail())
-				throw std::runtime_error(std::format("Failed reading parameters on line {}. Check you have "
-					"the right type/number of parameters.", lineNum));
-
 			GalaxyParams params{position, velocity, outerRadius, innerRadius, packDistance, centerMass, centerDiameter,
 				outerMass, outerDiameter, oppositeSpin};
 
 			generateGalaxyBodies(params, positions, velocities, masses, diameters);
 		}
 		else
-		{
-			throw std::runtime_error(std::format("Unknown generation type '{}' on line {}", generationType, lineNum));
-		}
+			throw std::runtime_error(std::format("Unknown generation type '{}' on line {}.", generationType, lineNum));
 #undef PARSE_POSITION
 #undef PARSE_VELOCITY
 #undef PARSE_FLOAT
+
+		if (ss.fail())
+			throw std::runtime_error(std::format("Failed reading parameters on line {}. Check you have "
+				"the right type/number of parameters.", lineNum));
 	}
 }
 
@@ -153,7 +151,7 @@ void BodyGenerator::generateGalaxyBodies(const GalaxyParams& params, std::vector
 			const float dist = sqrtf(sqrDist);
 			const glm::vec2 rel = glm::vec2{x, y} - params.position;
 			const glm::vec2 tangent = glm::normalize(glm::vec2{-rel.y, rel.x});
-			const float orbitalSpeed = (params.counterClockwise ? 1.0f : -1.0f) * sqrtf(GRAV_CONST * params.centerMass / dist);
+			const float orbitalSpeed = (params.counterClockwise ? 1.0f : -1.0f) * sqrtf(g_gravConst * params.centerMass / dist);
 
 			positions.emplace_back(x, y);
 			velocities.emplace_back(tangent * orbitalSpeed + params.velocity);

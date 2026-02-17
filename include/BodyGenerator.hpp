@@ -5,7 +5,7 @@
 #ifndef GRAV_SIM_CPU_BODY_GENERATOR_HPP
 #define GRAV_SIM_CPU_BODY_GENERATOR_HPP
 
-#include "config.hpp"
+#include "parameters.hpp"
 
 #include <vector>
 
