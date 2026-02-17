@@ -12,8 +12,8 @@
 class BodyGenerator
 {
 public:
-	static void generateBodies(std::vector<glm::vec2>& positions, std::vector<glm::vec2>& velocities,
-		std::vector<float>& masses, std::vector<float>& diameters);
+	static void generateBodies(const char* generationPath, std::vector<glm::vec2>& positions,
+		std::vector<glm::vec2>& velocities, std::vector<float>& masses, std::vector<float>& diameters);
 
 private:
 	struct SingleParams

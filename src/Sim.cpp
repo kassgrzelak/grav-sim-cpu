@@ -17,9 +17,9 @@ static constexpr float CAMERA_ZOOM_SCROLL_SPEED = 0.15f;
 static constexpr float CAMERA_MAX_ZOOM = 12.0f;
 static constexpr float CAMERA_MIN_ZOOM = 0.1f;
 
-Sim::Sim() : m_quadTree(m_positions, m_masses), m_circleTex(), m_camera()
+Sim::Sim(const char* generationPath) : m_quadTree(m_positions, m_masses), m_circleTex(), m_camera()
 {
-	BodyGenerator::generateBodies(m_positions, m_velocities, m_masses, m_diameters);
+	BodyGenerator::generateBodies(generationPath, m_positions, m_velocities, m_masses, m_diameters);
 
 	assert(m_positions.size() == m_velocities.size() && m_velocities.size() == m_masses.size());
 	m_bodyNum = m_positions.size();

@@ -14,7 +14,7 @@
 class Sim
 {
 public:
-	Sim();
+	Sim(const char* generationPath);
 
 	void run();
 

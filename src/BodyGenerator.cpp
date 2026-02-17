@@ -12,12 +12,12 @@
 #include <glm/gtx/norm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-void BodyGenerator::generateBodies(std::vector<glm::vec2>& positions, std::vector<glm::vec2>& velocities,
-	std::vector<float>& masses, std::vector<float>& diameters)
+void BodyGenerator::generateBodies(const char* generationPath, std::vector<glm::vec2>& positions,
+	std::vector<glm::vec2>& velocities, std::vector<float>& masses, std::vector<float>& diameters)
 {
-	std::ifstream file("generation.cfg");
+	std::ifstream file(generationPath);
 	if (!file.is_open())
-		throw std::runtime_error("Failed to open generation config file.");
+		throw std::runtime_error(std::format("Failed to open generation config file given path {}.", generationPath));
 
 	int lineNum = 0;
 	std::string line;
