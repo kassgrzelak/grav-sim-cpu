@@ -32,39 +32,71 @@ void BodyGenerator::generateBodies(std::vector<glm::vec2>& positions, std::vecto
 
 		std::string generationType;
 		ss >> generationType;
+#define PARSE_POSITION() \
+	PARSE_FLOAT(positionX); \
+	PARSE_FLOAT(positionY); \
+	glm::vec2 position = {positionX, positionY}
+#define PARSE_VELOCITY() \
+	PARSE_FLOAT(velocityX); \
+	PARSE_FLOAT(velocityY); \
+	glm::vec2 velocity = {velocityX, velocityY}
+#define PARSE_FLOAT(varName) \
+	float varName; \
+	ss >> varName
 
-		if (generationType == "GALAXY")
+		if (generationType == "SINGLE")
 		{
-			float positionX;
-			float positionY;
-			ss >> positionX >> positionY;
-			glm::vec2 position = {positionX, positionY};
+			PARSE_POSITION();
+			PARSE_VELOCITY();
 
-			float velocityX;
-			float velocityY;
-			ss >> velocityX >> velocityY;
-			glm::vec2 velocity = {velocityX, velocityY};
+			PARSE_FLOAT(mass);
+			PARSE_FLOAT(diameter);
 
-			float outerRadius;
-			ss >> outerRadius;
+			SingleParams params{position, velocity, mass, diameter};
 
-			float innerRadius;
-			ss >> innerRadius;
+			generateSingleBody(params, positions, velocities, masses, diameters);
+		}
+		else if (generationType == "RECTPACK")
+		{
+			PARSE_POSITION();
+			PARSE_VELOCITY();
 
-			float packDistance;
-			ss >> packDistance;
+			PARSE_FLOAT(width);
+			PARSE_FLOAT(height);
+			PARSE_FLOAT(packDistance);
+			PARSE_FLOAT(bodyMass);
+			PARSE_FLOAT(bodyDiameter);
 
-			float centerMass;
-			ss >> centerMass;
+			RectPackParams params{position, velocity, width, height, packDistance, bodyMass, bodyDiameter};
 
-			float centerDiameter;
-			ss >> centerDiameter;
+			generateRectPackBodies(params, positions, velocities, masses, diameters);
+		}
+		else if (generationType == "CIRCLEPACK")
+		{
+			PARSE_POSITION();
+			PARSE_VELOCITY();
 
-			float outerMass;
-			ss >> outerMass;
+			PARSE_FLOAT(radius);
+			PARSE_FLOAT(packDistance);
+			PARSE_FLOAT(bodyMass);
+			PARSE_FLOAT(bodyDiameter);
 
-			float outerDiameter;
-			ss >> outerDiameter;
+			CirclePackParams params{position, velocity, radius, packDistance, bodyMass, bodyDiameter};
+
+			generateCirclePackBodies(params, positions, velocities, masses, diameters);
+		}
+		else if (generationType == "GALAXY")
+		{
+			PARSE_POSITION();
+			PARSE_VELOCITY();
+
+			PARSE_FLOAT(outerRadius);
+			PARSE_FLOAT(innerRadius);
+			PARSE_FLOAT(packDistance);
+			PARSE_FLOAT(centerMass);
+			PARSE_FLOAT(centerDiameter);
+			PARSE_FLOAT(outerMass);
+			PARSE_FLOAT(outerDiameter);
 
 			bool oppositeSpin;
 			ss >> oppositeSpin;
@@ -78,32 +110,13 @@ void BodyGenerator::generateBodies(std::vector<glm::vec2>& positions, std::vecto
 
 			generateGalaxyBodies(params, positions, velocities, masses, diameters);
 		}
-		else if (generationType == "SINGLE")
-		{
-			float positionX;
-			float positionY;
-			ss >> positionX >> positionY;
-			glm::vec2 position = {positionX, positionY};
-
-			float velocityX;
-			float velocityY;
-			ss >> velocityX >> velocityY;
-			glm::vec2 velocity = {velocityX, velocityY};
-
-			float mass;
-			ss >> mass;
-
-			float diameter;
-			ss >> diameter;
-
-			SingleParams params{position, velocity, mass, diameter};
-
-			generateSingleBody(params, positions, velocities, masses, diameters);
-		}
 		else
 		{
 			throw std::runtime_error(std::format("Unknown generation type '{}' on line {}", generationType, lineNum));
 		}
+#undef PARSE_POSITION
+#undef PARSE_VELOCITY
+#undef PARSE_FLOAT
 	}
 }
 
@@ -150,8 +163,65 @@ void BodyGenerator::generateGalaxyBodies(const GalaxyParams& params, std::vector
 	}
 }
 
-void BodyGenerator::generateSingleBody(const SingleParams& params, std::vector<glm::vec2>& positions,
+void BodyGenerator::generateRectPackBodies(const RectPackParams& params, std::vector<glm::vec2>& positions,
 	std::vector<glm::vec2>& velocities, std::vector<float>& masses, std::vector<float>& diameters)
+{
+	const float halfPackDistance = params.packDistance / 2.0f;
+	const float halfWidth = params.width / 2;
+	const float halfHeight = params.height / 2;
+	const float h = sqrtf(3.0f) * halfPackDistance;
+	float offset = 0.0f;
+
+	for (float y = params.position.y - halfHeight; y < params.position.y + halfHeight; y += h)
+	{
+		if (offset == 0.0f)
+			offset = halfPackDistance;
+		else
+			offset = 0.0f;
+
+		for (float x = params.position.x - halfWidth + offset; x < params.position.x + halfWidth;
+			x += params.packDistance)
+		{
+			positions.emplace_back(x, y);
+			velocities.emplace_back(params.velocity);
+			masses.push_back(params.bodyMass);
+			diameters.push_back(params.bodyDiameter);
+		}
+	}
+}
+
+void BodyGenerator::generateCirclePackBodies(const CirclePackParams& params, std::vector<glm::vec2>& positions,
+                                             std::vector<glm::vec2>& velocities, std::vector<float>& masses, std::vector<float>& diameters)
+{
+	const float halfPackDistance = params.packDistance / 2.0f;
+	const float radiusSquared = params.radius * params.radius;
+	const float h = sqrtf(3.0f) * halfPackDistance;
+	float offset = 0.0f;
+
+	for (float y = params.position.y - params.radius; y < params.position.y + params.radius; y += h)
+	{
+		if (offset == 0.0f)
+			offset = halfPackDistance;
+		else
+			offset = 0.0f;
+
+		for (float x = params.position.x - params.radius + offset; x < params.position.x + params.radius;
+			x += params.packDistance)
+		{
+			const float sqrDist = glm::distance2(params.position, glm::vec2{x, y});
+			if (sqrDist > radiusSquared)
+				continue;
+
+			positions.emplace_back(x, y);
+			velocities.emplace_back(params.velocity);
+			masses.push_back(params.bodyMass);
+			diameters.push_back(params.bodyDiameter);
+		}
+	}
+}
+
+void BodyGenerator::generateSingleBody(const SingleParams& params, std::vector<glm::vec2>& positions,
+                                       std::vector<glm::vec2>& velocities, std::vector<float>& masses, std::vector<float>& diameters)
 {
 	positions.push_back(params.position);
 	velocities.push_back(params.velocity);
