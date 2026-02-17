@@ -220,7 +220,6 @@ glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeInde
 void QuadTree::visualize(const NodeIndex_t nodeIndex, const Rectangle rect, const float cameraZoom) const
 {
 	DrawRectangleRec(rect, QUADTREE_VIS_FILL_COLOR);
-	const Node& node = m_nodes[nodeIndex];
 
 	if (m_nodeIsLeaf[nodeIndex])
 	{
@@ -228,19 +227,21 @@ void QuadTree::visualize(const NodeIndex_t nodeIndex, const Rectangle rect, cons
 		return;
 	}
 
+	const auto& [child1, child2, child3, child4] = m_nodes[nodeIndex];
+
 	DrawRectangleLinesEx(rect, QUADTREE_VIS_LINE_THICKNESS / cameraZoom, QUADTREE_VIS_OUTLINE_COLOR);
 
-	if (node.child1 != NULL_INDEX)
-		visualize(node.child1,
+	if (child1 != NULL_INDEX)
+		visualize(child1,
 			{rect.x, rect.y, rect.width / 2.0f, rect.height / 2.0f}, cameraZoom);
-	if (node.child2 != NULL_INDEX)
-		visualize(node.child2,
+	if (child2 != NULL_INDEX)
+		visualize(child2,
 			{rect.x + rect.width / 2.0f, rect.y, rect.width / 2.0f, rect.height / 2.0f}, cameraZoom);
-	if (node.child3 != NULL_INDEX)
-		visualize(node.child3,
+	if (child3 != NULL_INDEX)
+		visualize(child3,
 			{rect.x, rect.y + rect.height / 2.0f, rect.width / 2.0f, rect.height / 2.0f}, cameraZoom);
-	if (node.child4 != NULL_INDEX)
-		visualize(node.child4,
+	if (child4 != NULL_INDEX)
+		visualize(child4,
 			{rect.x + rect.width / 2.0f, rect.y + rect.height / 2.0f,
 				rect.width / 2.0f, rect.height / 2.0f}, cameraZoom);
 }
