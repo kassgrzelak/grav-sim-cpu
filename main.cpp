@@ -10,7 +10,7 @@ int main(const int argc, const char* argv[])
 		std::cout << "Options:\n" <<
 			"\t-g | --generation: Path to generation config file. Looks for a file called generation.cfg in the same "
 			"directory by default.\n" <<
-			"--help: Display this message.";
+			"--help: Display this message.\n";
 
 		return 0;
 	}
@@ -27,7 +27,7 @@ int main(const int argc, const char* argv[])
 				++i;
 			else
 			{
-				std::cerr << "no argument supplied for generation file.\n";
+				std::cerr << "No argument supplied for generation file.\n";
 				return 64;
 			}
 
