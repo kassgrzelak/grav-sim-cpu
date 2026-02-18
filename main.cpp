@@ -55,11 +55,10 @@ int main(const int argc, const char* argv[])
 		}
 	}
 
-	loadSimulationFile(simulationPath);
-	Sim sim(generationPath);
-
 	try
 	{
+		loadSimulationFile(simulationPath);
+		Sim sim(generationPath);
 		sim.run();
 	}
 	catch (std::exception& e)

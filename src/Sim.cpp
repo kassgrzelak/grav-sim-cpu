@@ -31,6 +31,7 @@ Sim::Sim(const char* generationPath) : m_quadTree(m_positions, m_masses), m_circ
 
 	if (g_resizable)
 		SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(static_cast<int>(g_screenDims.x), static_cast<int>(g_screenDims.y), "CPU Gravity Simulation");
 	SetTargetFPS(g_targetFPS);
 

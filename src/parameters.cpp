@@ -53,7 +53,7 @@ void loadSimulationFile(const char* simulationPath)
     do \
     { \
         if (foundVar) \
-            throw std::runtime_error(std::format("Double definition of {} on line {}.", varName, line)); \
+            throw std::runtime_error(std::format("Double definition of {} on line {}.", varName, lineNum)); \
         ss >> var; \
         foundVar = true; \
     } \
@@ -67,7 +67,7 @@ void loadSimulationFile(const char* simulationPath)
         else if (parameter == "SCREENDIMS")
         {
             if (screenDimsFound)
-                throw std::runtime_error(std::format("Double definition of SCREENDIMS on line {}.", line));
+                throw std::runtime_error(std::format("Double definition of SCREENDIMS on line {}.", lineNum));
 
             float width, height;
             ss >> width >> height;
@@ -84,7 +84,7 @@ void loadSimulationFile(const char* simulationPath)
         else if (parameter == "BODYCOLOR")
         {
             if (bodyColorFound)
-                throw std::runtime_error(std::format("Double definition of BODYCOLOR on line {}.", line));
+                throw std::runtime_error(std::format("Double definition of BODYCOLOR on line {}.", lineNum));
 
             int r, g, b, a;
             ss >> r >> g >> b >> a;
@@ -103,7 +103,21 @@ void loadSimulationFile(const char* simulationPath)
     }
 
     if (!(thetaFound && gravConstFound && gravSmoothnessFound && screenDimsFound && targetFPSFound && timeScaleFound && bodyColorFound))
-        throw std::runtime_error(std::format("Did not find a definition for every"));
+        throw std::runtime_error(std::format("Did not find a definition for every parameter.\n"
+            "\tTHETA: {}\n"
+            "\tGRAVCONST: {}\n"
+            "\tGRAVSMOOTHNESS: {}\n"
+            "\tSCREENDIMS: {}\n"
+            "\tTARGETFPS: {}\n"
+            "\tTIMESCALE: {}\n"
+            "\tBODYCOLOR: {}\n",
+            thetaFound ? "found" : "missing",
+            gravConstFound ? "found" : "missing",
+            gravSmoothnessFound ? "found" : "missing",
+            screenDimsFound ? "found" : "missing",
+            targetFPSFound ? "found" : "missing",
+            timeScaleFound ? "found" : "missing",
+            bodyColorFound ? "found" : "missing"));
 
-    g_deltaTime = g_timeScale / g_targetFPS;
+    g_deltaTime = g_timeScale / static_cast<float>(g_targetFPS);
 }
