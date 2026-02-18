@@ -17,6 +17,8 @@ static constexpr Color QUADTREE_VIS_OUTLINE_COLOR = {255, 255, 255, 50};
 static constexpr Color QUADTREE_VIS_LEAF_OUTLINE_COLOR = RED;
 static constexpr float QUADTREE_VIS_LINE_THICKNESS = 1.0f;
 
+static constexpr float SQR_DIST_EPSILON = 0.1f;
+
 QuadTree::QuadTree(const std::vector<glm::vec2>& positions, const std::vector<float>& masses)
 	: m_positions(&positions), m_masses(&masses) { }
 
@@ -166,7 +168,7 @@ static glm::vec2 gravAccel(const glm::vec2 position, const glm::vec2 sourcePosit
 	const glm::vec2 rel = sourcePosition - position;
 	const float sqrDist = glm::length2(rel);
 
-	if (sqrDist == 0.0f)
+	if (sqrDist <= SQR_DIST_EPSILON)
 		return {};
 
 	const glm::vec2 dir = rel / sqrtf(sqrDist);
@@ -199,7 +201,7 @@ glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeInde
 	const float sqrDist = glm::length2(rel);
 
 	// Prevent NaNs/infs.
-	if (sqrDist == 0.0f)
+	if (sqrDist <= SQR_DIST_EPSILON)
 		return {};
 
 	const float boundsSize = m_precomputedBoundsSizes[depth];
