@@ -44,7 +44,7 @@ private:
 	void draw() const;
 
 	void drawDetails() const;
-	void drawControls() const;
+	static void drawControls() ;
 
 	static void drawTextRJust(const char* text, int x, int y, int fontSize, Color color);
 };

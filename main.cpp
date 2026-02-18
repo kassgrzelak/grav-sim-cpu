@@ -17,18 +17,17 @@ int main(const int argc, const char* argv[])
 		return 0;
 	}
 
+	// Config file default paths.
 	const char* generationPath = "generation.cfg";
 	const char* simulationPath = "simulation.cfg";
 
 	for (int i = 1; i < argc; ++i)
 	{
-		const char* arg = argv[i];
+		const char* option = argv[i];
 
-		if (strcmp(arg, "-g") == 0 || strcmp(arg, "--generation") == 0)
+		if (strcmp(option, "-g") == 0 || strcmp(option, "--generation") == 0)
 		{
-			if (i < argc - 1)
-				++i;
-			else
+			if (++i >= argc)
 			{
 				std::cerr << "No argument supplied for generation file.\n";
 				return 64;
@@ -36,11 +35,9 @@ int main(const int argc, const char* argv[])
 
 			generationPath = argv[i];
 		}
-		else if (strcmp(arg, "-s") == 0 || strcmp(arg, "--simulation") == 0)
+		else if (strcmp(option, "-s") == 0 || strcmp(option, "--simulation") == 0)
 		{
-			if (i < argc - 1)
-				++i;
-			else
+			if (++i >= argc)
 			{
 				std::cerr << "No argument supplied for simulation file.\n";
 				return 64;
@@ -50,7 +47,7 @@ int main(const int argc, const char* argv[])
 		}
 		else
 		{
-			std::cerr << "Unknown option '" << arg << "'\n";
+			std::cerr << "Unknown option '" << option << "'\n";
 			return 64;
 		}
 	}

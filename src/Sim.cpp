@@ -7,8 +7,6 @@
 #include <algorithm>
 #include <execution>
 #include <format>
-#include <fstream>
-#include <sstream>
 #include <glm/gtx/norm.hpp>
 
 #include "BodyGenerator.hpp"
@@ -31,7 +29,7 @@ Sim::Sim(const char* generationPath) : m_quadTree(m_positions, m_masses), m_circ
 
 	if (g_resizable)
 		SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-	SetTraceLogLevel(LOG_ERROR);
+	SetTraceLogLevel(LOG_ERROR); // Suppress Raylib logs.
 	InitWindow(static_cast<int>(g_screenDims.x), static_cast<int>(g_screenDims.y), "CPU Gravity Simulation");
 	SetTargetFPS(g_targetFPS);
 
@@ -120,6 +118,7 @@ void Sim::takeInput()
 #define TOGGLE(key, var) \
 	if (IsKeyPressed(key)) \
 		var = !var
+
 	{
 		if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_P))
 			m_paused = !m_paused;
@@ -221,7 +220,7 @@ void Sim::drawDetails() const
 #undef DRAW_DETAIL
 }
 
-void Sim::drawControls() const
+void Sim::drawControls()
 {
 	int y = 5;
 

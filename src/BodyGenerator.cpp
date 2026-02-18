@@ -17,7 +17,7 @@ void BodyGenerator::generateBodies(const char* generationPath, std::vector<glm::
 {
 	std::ifstream file(generationPath);
 	if (!file.is_open())
-		throw std::runtime_error(std::format("Failed to open generation config file given path {}.", generationPath));
+		throw std::runtime_error(std::format("Failed to open generation file given path {}.", generationPath));
 
 	int lineNum = 0;
 	std::string line;
@@ -25,6 +25,7 @@ void BodyGenerator::generateBodies(const char* generationPath, std::vector<glm::
 	{
 		++lineNum;
 
+		// Skip empty lines and comments.
 		if (line.empty() || line[0] == '#')
 			continue;
 
@@ -32,14 +33,17 @@ void BodyGenerator::generateBodies(const char* generationPath, std::vector<glm::
 
 		std::string generationType;
 		ss >> generationType;
+
 #define PARSE_POSITION() \
 	PARSE_FLOAT(positionX); \
 	PARSE_FLOAT(positionY); \
 	glm::vec2 position = {positionX, positionY}
+
 #define PARSE_VELOCITY() \
 	PARSE_FLOAT(velocityX); \
 	PARSE_FLOAT(velocityY); \
 	glm::vec2 velocity = {velocityX, velocityY}
+
 #define PARSE_FLOAT(varName) \
 	float varName; \
 	ss >> varName

@@ -104,6 +104,7 @@ void QuadTree::calculateBoundingSquare()
 
 NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, const float size, const glm::vec2 center)
 {
+	// Exit if range empty.
 	if (begin == end)
 		return NULL_INDEX;
 
@@ -111,6 +112,7 @@ NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, cons
 	CoM& com = m_nodeCoMs[result];
 	const long nodeLength = end - begin;
 
+	// Calculate CoM of node.
 	glm::vec2 momentSum = {};
 	float massSum = 0;
 
@@ -124,6 +126,7 @@ NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, cons
 	com.position = momentSum / massSum;
 	com.mass = massSum;
 
+	// Leaf node.
 	if (nodeLength == 1)
 	{
 		m_nodeBodyIndices[result] = *begin;
@@ -131,6 +134,7 @@ NodeIndex_t QuadTree::buildTree(const IndexIt_t begin, const IndexIt_t end, cons
 		return result;
 	}
 
+	// Partition bodies into quadrants and recurse.
 	m_nodeBodyIndices[result] = NULL_INDEX;
 	m_nodeIsLeaf[result] = false;
 
@@ -181,8 +185,10 @@ glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeInde
 {
 	const CoM& com = m_nodeCoMs[nodeIndex];
 
+	// If leaf node, no further recursion can be done.
 	if (m_nodeIsLeaf[nodeIndex])
 	{
+		// Discard if leaf node has same position as current body.
 		if ((*m_positions)[m_nodeBodyIndices[nodeIndex]] == position)
 			return {};
 
@@ -192,6 +198,7 @@ glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeInde
 	const glm::vec2 rel = com.position - position;
 	const float sqrDist = glm::length2(rel);
 
+	// Prevent NaNs/infs.
 	if (sqrDist == 0.0f)
 		return {};
 
@@ -199,9 +206,11 @@ glm::vec2 QuadTree::accelAt(const glm::vec2 position, const NodeIndex_t nodeInde
 	const float sqrBoundsSize = boundsSize * boundsSize;
 	const float sqrHeuristic = sqrBoundsSize / sqrDist;
 
+	// Decide whether to approximate gravitational field using the Barnes-Hut heuristic.
 	if (sqrHeuristic < g_theta * g_theta)
 		return gravAccel(rel, sqrDist, com.mass);
 
+	// Otherwise, recurse.
 	const Node& node = m_nodes[nodeIndex];
 	glm::vec2 accelSum = {};
 

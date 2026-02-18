@@ -40,6 +40,7 @@ void loadSimulationFile(const char* simulationPath)
     {
         ++lineNum;
 
+        // Skip empty lines and comments.
         if (line.empty() || line[0] == '#')
             continue;
 
@@ -58,6 +59,7 @@ void loadSimulationFile(const char* simulationPath)
         foundVar = true; \
     } \
     while (false)
+
         if (parameter == "THETA")
             READ_PARAMETER("THETA", thetaFound, g_theta);
         else if (parameter == "GRAVCONST")
