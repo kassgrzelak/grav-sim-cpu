@@ -9,6 +9,13 @@
 
 #include "colormap.hpp"
 
+enum class ColormapMode
+{
+    None, Speed, Velocity
+};
+
+const char* colormapModeToString(ColormapMode mode);
+
 // Defined in parameters.cpp when loading simulation config file.
 extern float g_theta;
 extern float g_gravConst;
@@ -24,9 +31,9 @@ extern float g_deltaTime;
 extern Color3 g_bodyColor;
 extern int g_bodyAlpha;
 
-extern bool g_useColorMap;
-extern float g_colorMapMaxVel;
-extern float g_colorMapMaxSqrVel;
+extern ColormapMode g_colormapMode;
+extern float g_colormapMaxSpeed;
+extern float g_colormapMaxSqrSpeed;
 
 void loadSimulationFile(const char* simulationPath);
 

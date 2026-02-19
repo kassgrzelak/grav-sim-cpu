@@ -48,6 +48,7 @@ void BodyGenerator::generateBodies(const char* generationPath, std::vector<glm::
 	float varName; \
 	ss >> varName
 
+		// TODO: Grid generation.
 		if (generationType == "SINGLE")
 		{
 			PARSE_POSITION();

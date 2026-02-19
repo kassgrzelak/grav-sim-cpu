@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <execution>
 #include <format>
+#include <iostream>
 #include <glm/gtx/norm.hpp>
 
 #include "BodyGenerator.hpp"
@@ -189,15 +190,49 @@ void Sim::draw() const
 
 		Color bodyColor;
 
-		if (g_useColorMap)
+		// if (g_colormapMode)
+		// {
+		// 	const float sqrVelocity = glm::length2(m_velocities[i]);
+		// 	const int colormapIndex = std::clamp(static_cast<int>(sqrVelocity / g_colormapMaxSqrSpeed * COLORMAP_SIZE), 0, 255);
+		// 	const Color3 color = COLORMAP_ARRAY[colormapIndex];
+		// 	bodyColor = Color{color.r, color.g, color.b, static_cast<unsigned char>(g_bodyAlpha)};
+		// }
+		// else
+		// 	bodyColor = Color{g_bodyColor.r, g_bodyColor.g, g_bodyColor.b, static_cast<unsigned char>(g_bodyAlpha)};
+
+		switch (g_colormapMode)
 		{
-			const float sqrVelocity = glm::length2(m_velocities[i]);
-			const int colormapIndex = std::clamp(static_cast<int>(sqrVelocity / g_colorMapMaxSqrVel * COLORMAP_SIZE), 0, 255);
-			const Color3 color = COLORMAP_ARRAY[colormapIndex];
-			bodyColor = Color{color.r, color.g, color.b, static_cast<unsigned char>(g_bodyAlpha)};
-		}
-		else
+		case ColormapMode::None:
 			bodyColor = Color{g_bodyColor.r, g_bodyColor.g, g_bodyColor.b, static_cast<unsigned char>(g_bodyAlpha)};
+			break;
+
+		case ColormapMode::Speed:
+			{
+				const float sqrVelocity = glm::length2(m_velocities[i]);
+				const int colormapIndex =
+					std::clamp(static_cast<int>(sqrVelocity / g_colormapMaxSqrSpeed * SPEED_COLORMAP_SIZE),
+						0, SPEED_COLORMAP_SIZE);
+				const auto [r, g, b] = SPEED_COLORMAP_ARRAY[colormapIndex];
+				bodyColor = Color{r, g, b, static_cast<unsigned char>(g_bodyAlpha)};
+				break;
+			}
+
+		case ColormapMode::Velocity:
+			{
+				const glm::vec2 velocity = m_velocities[i];
+				const float angle = atan2f(velocity.y, velocity.x) + PI;
+				const int colormapIndex =
+					std::clamp(static_cast<int>(angle / (2 * PI) * VELOCITY_COLORMAP_SIZE),
+						0, VELOCITY_COLORMAP_SIZE);
+				const auto [r, g, b] = VELOCITY_COLORMAP_ARRAY[colormapIndex];
+				bodyColor = Color{r, g, b, static_cast<unsigned char>(g_bodyAlpha)};
+				break;
+			}
+
+		// Unreachable.
+		default:
+			throw std::runtime_error(std::format("Unknown colormap mode '{}'.", colormapModeToString(g_colormapMode)));
+		}
 
 		DrawTexturePro(
 		   m_circleTex,
@@ -234,7 +269,7 @@ void Sim::drawDetails() const
 	DrawText(std::format("{} = {}", name, value).c_str(), \
 		5, static_cast<int>(g_screenDims.y - (y += 20)), 20, WHITE)
 
-	DRAW_DETAIL("Colormap mode", g_useColorMap ? "Speed" : "None");
+	DRAW_DETAIL("Colormap mode", colormapModeToString(g_colormapMode));
 	DRAW_DETAIL("Delta time", g_deltaTime);
 	DRAW_DETAIL("Timescale", g_timeScale);
 	DRAW_DETAIL("Target FPS", g_targetFPS);
@@ -252,6 +287,7 @@ void Sim::drawControls()
 	drawTextRJust(std::format("{}: {}", control, desc).c_str(), \
 		static_cast<int>(g_screenDims.x - 5), static_cast<int>(g_screenDims.y - (y += 20)), 20, WHITE)
 
+	// TODO: Legend for colormap modes.
 	DRAW_CONTROL("Q", "Quadtree visualization");
 	DRAW_CONTROL("R", "Reverse time");
 	DRAW_CONTROL("D", "Show sim details");

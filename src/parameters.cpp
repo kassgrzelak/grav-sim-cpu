@@ -9,6 +9,18 @@
 #include <iostream>
 #include <sstream>
 
+const char* colormapModeToString(const ColormapMode mode)
+{
+    switch (mode)
+    {
+        case ColormapMode::None:     return "None";
+        case ColormapMode::Speed:    return "Speed";
+        case ColormapMode::Velocity: return "Velocity";
+    }
+
+    return "Unknown"; // Unreachable.
+}
+
 float g_theta;
 float g_gravConst;
 float g_gravSmoothness;
@@ -19,9 +31,9 @@ float g_timeScale;
 float g_deltaTime;
 Color3 g_bodyColor;
 int g_bodyAlpha;
-bool g_useColorMap;
-float g_colorMapMaxVel;
-float g_colorMapMaxSqrVel;
+ColormapMode g_colormapMode;
+float g_colormapMaxSpeed;
+float g_colormapMaxSqrSpeed;
 
 void loadSimulationFile(const char* simulationPath)
 {
@@ -38,8 +50,8 @@ void loadSimulationFile(const char* simulationPath)
     bool timeScaleFound = false;
     bool bodyColorFound = false;
     bool bodyAlphaFound = false;
-    bool useColorMapFound = false;
-    bool colorMapMaxVelFound = false;
+    bool colormapModeFound = false;
+    bool colormapMaxSpeedFound = false;
 
     int lineNum = 0;
     std::string line;
@@ -104,10 +116,27 @@ void loadSimulationFile(const char* simulationPath)
         }
         else if (parameter == "BODYALPHA")
             READ_PARAMETER("BODYALPHA", bodyAlphaFound, g_bodyAlpha);
-        else if (parameter == "USECOLORMAP")
-            READ_PARAMETER("USECOLORMAP", useColorMapFound, g_useColorMap);
-        else if (parameter == "COLORMAPMAXVEL")
-            READ_PARAMETER("COLORMAPMAXVEL", colorMapMaxVelFound, g_colorMapMaxVel);
+        else if (parameter == "COLORMAPMODE")
+        {
+            if (colormapModeFound)
+                throw std::runtime_error(std::format("Double definition of COLORMAPMODE on line {}.", lineNum));
+
+            std::string colormapMode;
+            ss >> colormapMode;
+
+            if (colormapMode == "NONE")
+                g_colormapMode = ColormapMode::None;
+            else if (colormapMode == "SPEED")
+                g_colormapMode = ColormapMode::Speed;
+            else if (colormapMode == "VELOCITY")
+                g_colormapMode = ColormapMode::Velocity;
+            else
+                throw std::runtime_error(std::format("Unknown colormap mode '{}' on line {}.", colormapMode, lineNum));
+
+            colormapModeFound = true;
+        }
+        else if (parameter == "COLORMAPMAXSPEED")
+            READ_PARAMETER("COLORMAPMAXSPEED", colormapMaxSpeedFound, g_colormapMaxSpeed);
         else
             throw std::runtime_error(std::format("Unknown parameter '{}' on line {}.", parameter, lineNum));
 #undef READ_PARAMETER
@@ -118,7 +147,7 @@ void loadSimulationFile(const char* simulationPath)
     }
 
     if (!(thetaFound && gravConstFound && gravSmoothnessFound && screenDimsFound && targetFPSFound && timeScaleFound &&
-        bodyColorFound && useColorMapFound && colorMapMaxVelFound))
+        bodyColorFound && colormapModeFound && colormapMaxSpeedFound))
         throw std::runtime_error(std::format("Did not find a definition for every parameter.\n"
             "\tTHETA: {}\n"
             "\tGRAVCONST: {}\n"
@@ -129,7 +158,7 @@ void loadSimulationFile(const char* simulationPath)
             "\tBODYCOLOR: {}\n"
             "\tBODYALPHA: {}\n"
             "\tUSECOLORMAP: {}\n"
-            "\tCOLORMAPMAXVEL: {}\n",
+            "\tCOLORMAPMAXSPEED: {}\n",
             thetaFound ? "found" : "missing",
             gravConstFound ? "found" : "missing",
             gravSmoothnessFound ? "found" : "missing",
@@ -138,9 +167,9 @@ void loadSimulationFile(const char* simulationPath)
             timeScaleFound ? "found" : "missing",
             bodyColorFound ? "found" : "missing",
             bodyAlphaFound ? "found" : "missing",
-            useColorMapFound ? "found" : "missing",
-            colorMapMaxVelFound ? "found" : "missing"));
+            colormapModeFound ? "found" : "missing",
+            colormapMaxSpeedFound ? "found" : "missing"));
 
     g_deltaTime = g_timeScale / static_cast<float>(g_targetFPS);
-    g_colorMapMaxSqrVel = g_colorMapMaxVel * g_colorMapMaxVel;
+    g_colormapMaxSqrSpeed = g_colormapMaxSpeed * g_colormapMaxSpeed;
 }

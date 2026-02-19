@@ -1,4 +1,5 @@
 import pyperclip
+import colorsys
 
 # Roughly based on the matplotlib viridis colormap
 gradient_definition = [
@@ -38,10 +39,10 @@ def sample_gradient(t, gradient):
 gradient_samples = 256
 gradient_array = [sample_gradient(i / gradient_samples, gradient_definition) for i in range (gradient_samples)]
 
-cpp_gradient_array = f"""constexpr int COLORMAP_SIZE = {gradient_samples};
+cpp_gradient_array = f"""constexpr int SPEED_COLORMAP_SIZE = {gradient_samples};
 
 // Generated using dev-tools/color-array-generator.py.
-constexpr Color3 COLORMAP_ARRAY[COLORMAP_SIZE] = {{
+constexpr Color3 SPEED_COLORMAP_ARRAY[SPEED_COLORMAP_SIZE] = {{
 """
 
 for sample in gradient_array:
@@ -66,3 +67,27 @@ if choice == "1":
     pyperclip.copy(cpp_gradient_array)
 elif choice == "2":
     pyperclip.copy(desmos_gradient_array + f"\nN={gradient_samples}")
+
+choice = input("\nGenerate velocity colormap? (y/n)\n> ")
+
+if choice == "y":
+    samples = 360
+    array = [colorsys.hsv_to_rgb(i / samples, 1, 1) for i in range(samples)]
+
+    cpp_array = f"""constexpr int VELOCITY_COLORMAP_SIZE = {samples};
+
+// Generated using dev-tools/color-array-generator.py.
+constexpr Color3 VELOCITY_COLORMAP_ARRAY[VELOCITY_COLORMAP_SIZE] = {{
+"""
+
+    for color in array:
+        cpp_array += f"\tColor3{{{int(color[0] * 255)}, {int(color[1] * 255)}, {int(color[2] * 255)}}},\n"
+
+    cpp_array = cpp_array[:-2] + "\n};"
+
+    print(cpp_array)
+
+    choice = input("Copy to clipboard? (y/n)\n> ")
+
+    if choice == "y":
+        pyperclip.copy(cpp_array)
