@@ -2,11 +2,24 @@ cmake_minimum_required(VERSION 3.20)
 project(grav_sim_cpu)
 set(CMAKE_CXX_STANDARD 26)
 
+option(DEV_BUILD OFF)
+
 if (CMAKE_BUILD_TYPE MATCHES Release)
-    add_compile_options(-O3 -march=native -mtune=native)
+    if (MSVC)
+        add_compile_options(/O2)
+    else()
+        if (DEV_BUILD)
+            add_compile_options(-O3 -march=native -mtune=native)
+        else()
+            add_compile_options(-O3)
+        endif()
+    endif()
 endif()
 
 include(FetchContent)
+
+set(BUILD_LIBTYPE "STATIC" CACHE STRING "" FORCE)
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 find_package(raylib QUIET)
 if (NOT raylib_FOUND)
