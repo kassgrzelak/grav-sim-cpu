@@ -234,6 +234,7 @@ void Sim::drawDetails() const
 	DrawText(std::format("{} = {}", name, value).c_str(), \
 		5, static_cast<int>(g_screenDims.y - (y += 20)), 20, WHITE)
 
+	DRAW_DETAIL("Colormap mode", g_useColorMap ? "Speed" : "None");
 	DRAW_DETAIL("Delta time", g_deltaTime);
 	DRAW_DETAIL("Timescale", g_timeScale);
 	DRAW_DETAIL("Target FPS", g_targetFPS);
