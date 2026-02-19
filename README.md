@@ -1,4 +1,4 @@
-<img width="1854" height="1048" alt="image" src="https://github.com/user-attachments/assets/a511ea02-f52f-47a7-9afc-5e8301027857" /># CPU Barnes-Hut Gravity Simulation
+# CPU Barnes-Hut Gravity Simulation
 
 A purely CPU (for now) implementation of the Barnes-Hut algorithm for n body gravitational simulation.
 
