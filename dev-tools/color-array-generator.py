@@ -41,11 +41,11 @@ gradient_array = [sample_gradient(i / gradient_samples, gradient_definition) for
 cpp_gradient_array = f"""constexpr int COLORMAP_SIZE = {gradient_samples};
 
 // Generated using dev-tools/color-array-generator.py.
-constexpr Color COLORMAP_ARRAY[COLORMAP_SIZE] = {{
+constexpr Color3 COLORMAP_ARRAY[COLORMAP_SIZE] = {{
 """
 
 for sample in gradient_array:
-    cpp_gradient_array += f"\tColor{{{sample[0]}, {sample[1]}, {sample[2]}, 255}},\n"
+    cpp_gradient_array += f"\tColor3{{{sample[0]}, {sample[1]}, {sample[2]}}},\n"
 
 cpp_gradient_array = cpp_gradient_array[:-2] + "\n};"
 

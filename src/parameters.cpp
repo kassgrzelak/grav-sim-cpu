@@ -17,7 +17,8 @@ bool g_resizable;
 int g_targetFPS;
 float g_timeScale;
 float g_deltaTime;
-Color g_bodyColor;
+Color3 g_bodyColor;
+int g_bodyAlpha;
 bool g_useColorMap;
 float g_colorMapMaxVel;
 float g_colorMapMaxSqrVel;
@@ -36,6 +37,7 @@ void loadSimulationFile(const char* simulationPath)
     bool targetFPSFound = false;
     bool timeScaleFound = false;
     bool bodyColorFound = false;
+    bool bodyAlphaFound = false;
     bool useColorMapFound = false;
     bool colorMapMaxVelFound = false;
 
@@ -93,13 +95,15 @@ void loadSimulationFile(const char* simulationPath)
             if (bodyColorFound)
                 throw std::runtime_error(std::format("Double definition of BODYCOLOR on line {}.", lineNum));
 
-            int r, g, b, a;
-            ss >> r >> g >> b >> a;
+            int r, g, b;
+            ss >> r >> g >> b;
             g_bodyColor = {static_cast<unsigned char>(r), static_cast<unsigned char>(g),
-                static_cast<unsigned char>(b), static_cast<unsigned char>(a)};
+                static_cast<unsigned char>(b)};
 
             bodyColorFound = true;
         }
+        else if (parameter == "BODYALPHA")
+            READ_PARAMETER("BODYALPHA", bodyAlphaFound, g_bodyAlpha);
         else if (parameter == "USECOLORMAP")
             READ_PARAMETER("USECOLORMAP", useColorMapFound, g_useColorMap);
         else if (parameter == "COLORMAPMAXVEL")
@@ -123,8 +127,9 @@ void loadSimulationFile(const char* simulationPath)
             "\tTARGETFPS: {}\n"
             "\tTIMESCALE: {}\n"
             "\tBODYCOLOR: {}\n"
-            "\tUSECOLORMAP: {}"
-            "\tCOLORMAPMAXVEL: {}",
+            "\tBODYALPHA: {}\n"
+            "\tUSECOLORMAP: {}\n"
+            "\tCOLORMAPMAXVEL: {}\n",
             thetaFound ? "found" : "missing",
             gravConstFound ? "found" : "missing",
             gravSmoothnessFound ? "found" : "missing",
@@ -132,6 +137,7 @@ void loadSimulationFile(const char* simulationPath)
             targetFPSFound ? "found" : "missing",
             timeScaleFound ? "found" : "missing",
             bodyColorFound ? "found" : "missing",
+            bodyAlphaFound ? "found" : "missing",
             useColorMapFound ? "found" : "missing",
             colorMapMaxVelFound ? "found" : "missing"));
 

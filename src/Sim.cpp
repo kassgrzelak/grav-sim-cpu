@@ -187,17 +187,17 @@ void Sim::draw() const
 		const float diameter = m_diameters[i];
 		const float radius = diameter / 2.0f;
 
-		Color color;
+		Color bodyColor;
 
-		// TODO: Allow setting alpha separately from color.
 		if (g_useColorMap)
 		{
 			const float sqrVelocity = glm::length2(m_velocities[i]);
 			const int colormapIndex = std::clamp(static_cast<int>(sqrVelocity / g_colorMapMaxSqrVel * COLORMAP_SIZE), 0, 255);
-			color = COLORMAP_ARRAY[colormapIndex];
+			const Color3 color = COLORMAP_ARRAY[colormapIndex];
+			bodyColor = Color{color.r, color.g, color.b, static_cast<unsigned char>(g_bodyAlpha)};
 		}
 		else
-			color = g_bodyColor;
+			bodyColor = Color{g_bodyColor.r, g_bodyColor.g, g_bodyColor.b, static_cast<unsigned char>(g_bodyAlpha)};
 
 		DrawTexturePro(
 		   m_circleTex,
@@ -205,7 +205,7 @@ void Sim::draw() const
 		   { position.x, position.y, diameter, diameter },
 		   { radius, radius },
 		   0.0f,
-		   color
+		   bodyColor
 	   );
 	}
 

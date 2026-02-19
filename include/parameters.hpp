@@ -6,7 +6,8 @@
 #define GRAV_SIM_CPU_CONFIG_HPP
 
 #include <glm/glm.hpp>
-#include <raylib.h>
+
+#include "colormap.hpp"
 
 // Defined in parameters.cpp when loading simulation config file.
 extern float g_theta;
@@ -20,7 +21,8 @@ extern int g_targetFPS;
 extern float g_timeScale;
 extern float g_deltaTime;
 
-extern Color g_bodyColor;
+extern Color3 g_bodyColor;
+extern int g_bodyAlpha;
 
 extern bool g_useColorMap;
 extern float g_colorMapMaxVel;
