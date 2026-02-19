@@ -22,6 +22,10 @@ extern float g_deltaTime;
 
 extern Color g_bodyColor;
 
+extern bool g_useColorMap;
+extern float g_colorMapMaxVel;
+extern float g_colorMapMaxSqrVel;
+
 void loadSimulationFile(const char* simulationPath);
 
 #endif //GRAV_SIM_CPU_CONFIG_HPP

@@ -4,3 +4,6 @@
 # Development config files.
 dev-generation.cfg
 dev-simulation.cfg
+
+# Development tools virtual environment.
+dev-tools/.venv/

@@ -10,6 +10,7 @@
 #include <glm/gtx/norm.hpp>
 
 #include "BodyGenerator.hpp"
+#include "colormap.hpp"
 
 static constexpr float CAMERA_ZOOM_BUTTON_SPEED = 0.05f;
 static constexpr float CAMERA_ZOOM_SCROLL_SPEED = 0.15f;
@@ -186,13 +187,25 @@ void Sim::draw() const
 		const float diameter = m_diameters[i];
 		const float radius = diameter / 2.0f;
 
+		Color color;
+
+		// TODO: Allow setting alpha separately from color.
+		if (g_useColorMap)
+		{
+			const float sqrVelocity = glm::length2(m_velocities[i]);
+			const int colormapIndex = std::clamp(static_cast<int>(sqrVelocity / g_colorMapMaxSqrVel * COLORMAP_SIZE), 0, 255);
+			color = COLORMAP_ARRAY[colormapIndex];
+		}
+		else
+			color = g_bodyColor;
+
 		DrawTexturePro(
 		   m_circleTex,
 		   { 0, 0, static_cast<float>(m_circleTex.width), static_cast<float>(m_circleTex.height) },
 		   { position.x, position.y, diameter, diameter },
 		   { radius, radius },
 		   0.0f,
-		   g_bodyColor
+		   color
 	   );
 	}
 

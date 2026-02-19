@@ -18,6 +18,9 @@ int g_targetFPS;
 float g_timeScale;
 float g_deltaTime;
 Color g_bodyColor;
+bool g_useColorMap;
+float g_colorMapMaxVel;
+float g_colorMapMaxSqrVel;
 
 void loadSimulationFile(const char* simulationPath)
 {
@@ -33,6 +36,8 @@ void loadSimulationFile(const char* simulationPath)
     bool targetFPSFound = false;
     bool timeScaleFound = false;
     bool bodyColorFound = false;
+    bool useColorMapFound = false;
+    bool colorMapMaxVelFound = false;
 
     int lineNum = 0;
     std::string line;
@@ -95,6 +100,10 @@ void loadSimulationFile(const char* simulationPath)
 
             bodyColorFound = true;
         }
+        else if (parameter == "USECOLORMAP")
+            READ_PARAMETER("USECOLORMAP", useColorMapFound, g_useColorMap);
+        else if (parameter == "COLORMAPMAXVEL")
+            READ_PARAMETER("COLORMAPMAXVEL", colorMapMaxVelFound, g_colorMapMaxVel);
         else
             throw std::runtime_error(std::format("Unknown parameter '{}' on line {}.", parameter, lineNum));
 #undef READ_PARAMETER
@@ -104,7 +113,8 @@ void loadSimulationFile(const char* simulationPath)
                 "the right type/number of values.", lineNum));
     }
 
-    if (!(thetaFound && gravConstFound && gravSmoothnessFound && screenDimsFound && targetFPSFound && timeScaleFound && bodyColorFound))
+    if (!(thetaFound && gravConstFound && gravSmoothnessFound && screenDimsFound && targetFPSFound && timeScaleFound &&
+        bodyColorFound && useColorMapFound && colorMapMaxVelFound))
         throw std::runtime_error(std::format("Did not find a definition for every parameter.\n"
             "\tTHETA: {}\n"
             "\tGRAVCONST: {}\n"
@@ -122,4 +132,5 @@ void loadSimulationFile(const char* simulationPath)
             bodyColorFound ? "found" : "missing"));
 
     g_deltaTime = g_timeScale / static_cast<float>(g_targetFPS);
+    g_colorMapMaxSqrVel = g_colorMapMaxVel * g_colorMapMaxVel;
 }
