@@ -13,9 +13,11 @@
 
 static constexpr float CAMERA_ZOOM_BUTTON_SPEED = 0.05f;
 static constexpr float CAMERA_ZOOM_SCROLL_SPEED = 0.15f;
-
 static constexpr float CAMERA_MAX_ZOOM = 12.0f;
 static constexpr float CAMERA_MIN_ZOOM = 0.1f;
+
+static constexpr float MIN_TIMESCALE = 1.0f / 64.0f;
+static constexpr float MAX_TIMESCALE = 16;
 
 Sim::Sim(const char* generationPath) : m_quadTree(m_positions, m_masses), m_circleTex(), m_camera()
 {
@@ -72,61 +74,70 @@ void Sim::updateScreenDims()
 void Sim::takeInput()
 {
 	// Camera.
+	if (IsKeyDown(KEY_MINUS))
+		m_camera.zoom = expf(logf(m_camera.zoom) - CAMERA_ZOOM_BUTTON_SPEED);
+	if (IsKeyDown(KEY_EQUAL))
+		m_camera.zoom = expf(logf(m_camera.zoom) + CAMERA_ZOOM_BUTTON_SPEED);
+
+	const float mouseWheelDelta = GetMouseWheelMoveV().y;
+	if (mouseWheelDelta != 0)
 	{
-		if (IsKeyDown(KEY_MINUS))
-			m_camera.zoom = expf(logf(m_camera.zoom) - CAMERA_ZOOM_BUTTON_SPEED);
-		if (IsKeyDown(KEY_EQUAL))
-			m_camera.zoom = expf(logf(m_camera.zoom) + CAMERA_ZOOM_BUTTON_SPEED);
+		const Vector2 mouseWorldBefore = GetScreenToWorld2D(GetMousePosition(), m_camera);
 
-		const float mouseWheelDelta = GetMouseWheelMoveV().y;
-		if (mouseWheelDelta != 0)
+		m_camera.zoom = expf(logf(m_camera.zoom) + CAMERA_ZOOM_SCROLL_SPEED * mouseWheelDelta);
+
+		if (m_camera.zoom >= CAMERA_MIN_ZOOM && m_camera.zoom <= CAMERA_MAX_ZOOM)
 		{
-			const Vector2 mouseWorldBefore = GetScreenToWorld2D(GetMousePosition(), m_camera);
+			const Vector2 mouseWorldAfter = GetScreenToWorld2D(GetMousePosition(), m_camera);
 
-			m_camera.zoom = expf(logf(m_camera.zoom) + CAMERA_ZOOM_SCROLL_SPEED * mouseWheelDelta);
-
-			if (m_camera.zoom >= CAMERA_MIN_ZOOM && m_camera.zoom <= CAMERA_MAX_ZOOM)
-			{
-				const Vector2 mouseWorldAfter = GetScreenToWorld2D(GetMousePosition(), m_camera);
-
-				m_camera.target.x += mouseWorldBefore.x - mouseWorldAfter.x;
-				m_camera.target.y += mouseWorldBefore.y - mouseWorldAfter.y;
-			}
+			m_camera.target.x += mouseWorldBefore.x - mouseWorldAfter.x;
+			m_camera.target.y += mouseWorldBefore.y - mouseWorldAfter.y;
 		}
-
-		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
-		{
-			const auto [dx, dy] = GetMouseDelta();
-			m_camera.target.x -= dx / m_camera.zoom;
-			m_camera.target.y -= dy / m_camera.zoom;
-		}
-
-		if (IsKeyPressed(KEY_F))
-		{
-			const glm::vec2 CoMPosition = m_quadTree.getSystemCoMPosition();
-			m_camera.target.x = CoMPosition.x;
-			m_camera.target.y = CoMPosition.y;
-		}
-
-		if (m_camera.zoom > CAMERA_MAX_ZOOM)
-			m_camera.zoom = CAMERA_MAX_ZOOM;
-		if (m_camera.zoom < CAMERA_MIN_ZOOM)
-			m_camera.zoom = CAMERA_MIN_ZOOM;
 	}
+
+	if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+	{
+		const auto [dx, dy] = GetMouseDelta();
+		m_camera.target.x -= dx / m_camera.zoom;
+		m_camera.target.y -= dy / m_camera.zoom;
+	}
+
+	if (IsKeyPressed(KEY_F))
+	{
+		const glm::vec2 CoMPosition = m_quadTree.getSystemCoMPosition();
+		m_camera.target.x = CoMPosition.x;
+		m_camera.target.y = CoMPosition.y;
+	}
+
+	if (m_camera.zoom > CAMERA_MAX_ZOOM)
+		m_camera.zoom = CAMERA_MAX_ZOOM;
+	if (m_camera.zoom < CAMERA_MIN_ZOOM)
+		m_camera.zoom = CAMERA_MIN_ZOOM;
+
+	// Time scale.
+	if (IsKeyPressed(KEY_COMMA))
+		g_timeScale /= 2.0f;
+	if (IsKeyPressed(KEY_PERIOD))
+		g_timeScale *= 2.0f;
+
+	if (g_timeScale > MAX_TIMESCALE)
+		g_timeScale = MAX_TIMESCALE;
+	if (g_timeScale < MIN_TIMESCALE)
+		g_timeScale = MIN_TIMESCALE;
+
+	g_deltaTime = g_timeScale / static_cast<float>(g_targetFPS);
 
 	// Toggles.
 #define TOGGLE(key, var) \
 	if (IsKeyPressed(key)) \
 		var = !var
 
-	{
-		if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_P))
-			m_paused = !m_paused;
-		TOGGLE(KEY_Q, m_visualizeQuadTree);
-		TOGGLE(KEY_D, m_showDetails);
-		TOGGLE(KEY_R, m_timeReverse);
-		TOGGLE(KEY_C, m_showControls);
-	}
+	if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_P))
+		m_paused = !m_paused;
+	TOGGLE(KEY_Q, m_visualizeQuadTree);
+	TOGGLE(KEY_D, m_showDetails);
+	TOGGLE(KEY_R, m_timeReverse);
+	TOGGLE(KEY_C, m_showControls);
 #undef TOGGLE
 }
 
@@ -232,6 +243,7 @@ void Sim::drawControls()
 	DRAW_CONTROL("R", "Reverse time");
 	DRAW_CONTROL("D", "Show sim details");
 	DRAW_CONTROL("F", "Focus on system CoM");
+	DRAW_CONTROL("Comma/period", "Change time scale");
 	DRAW_CONTROL("Space or P", "Pause");
 	DRAW_CONTROL("Scroll or +/-", "Zoom");
 	DRAW_CONTROL("Click and drag", "Pan");
