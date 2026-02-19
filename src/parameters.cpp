@@ -122,14 +122,18 @@ void loadSimulationFile(const char* simulationPath)
             "\tSCREENDIMS: {}\n"
             "\tTARGETFPS: {}\n"
             "\tTIMESCALE: {}\n"
-            "\tBODYCOLOR: {}\n",
+            "\tBODYCOLOR: {}\n"
+            "\tUSECOLORMAP: {}"
+            "\tCOLORMAPMAXVEL: {}",
             thetaFound ? "found" : "missing",
             gravConstFound ? "found" : "missing",
             gravSmoothnessFound ? "found" : "missing",
             screenDimsFound ? "found" : "missing",
             targetFPSFound ? "found" : "missing",
             timeScaleFound ? "found" : "missing",
-            bodyColorFound ? "found" : "missing"));
+            bodyColorFound ? "found" : "missing",
+            useColorMapFound ? "found" : "missing",
+            colorMapMaxVelFound ? "found" : "missing"));
 
     g_deltaTime = g_timeScale / static_cast<float>(g_targetFPS);
     g_colorMapMaxSqrVel = g_colorMapMaxVel * g_colorMapMaxVel;
