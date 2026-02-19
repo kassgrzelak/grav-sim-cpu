@@ -25,7 +25,6 @@ private:
 	std::vector<float> m_diameters = {};
 
 	QuadTree m_quadTree;
-	size_t m_bodyNum;
 
 	Texture2D m_circleTex;
 	Camera2D m_camera;

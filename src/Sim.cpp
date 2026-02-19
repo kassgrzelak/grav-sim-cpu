@@ -17,14 +17,13 @@ static constexpr float CAMERA_MAX_ZOOM = 12.0f;
 static constexpr float CAMERA_MIN_ZOOM = 0.1f;
 
 static constexpr float MIN_TIMESCALE = 1.0f / 64.0f;
-static constexpr float MAX_TIMESCALE = 16;
+static constexpr float MAX_TIMESCALE = 8;
 
 Sim::Sim(const char* generationPath) : m_quadTree(m_positions, m_masses), m_circleTex(), m_camera()
 {
 	BodyGenerator::generateBodies(generationPath, m_positions, m_velocities, m_masses, m_diameters);
 
 	assert(m_positions.size() == m_velocities.size() && m_velocities.size() == m_masses.size());
-	m_bodyNum = m_positions.size();
 
 	m_quadTree.buildTree();
 	initializeVelocities();
@@ -57,7 +56,7 @@ void Sim::run()
 
 void Sim::initializeVelocities()
 {
-	for (BodyIndex_t i = 0; i < m_bodyNum; ++i)
+	for (BodyIndex_t i = 0; i < m_positions.size(); ++i)
 		m_velocities[i] += m_quadTree.accelAt(m_positions[i]) * g_deltaTime * 0.5f;
 }
 
@@ -181,7 +180,7 @@ void Sim::draw() const
 	ClearBackground(BLACK);
 
 	BeginMode2D(m_camera);
-	for (BodyIndex_t i = 0; i < m_bodyNum; ++i)
+	for (BodyIndex_t i = 0; i < m_positions.size(); ++i)
 	{
 		const glm::vec2 position = m_positions[i];
 		const float diameter = m_diameters[i];
@@ -226,7 +225,7 @@ void Sim::drawDetails() const
 	DRAW_DETAIL("Timescale", g_timeScale);
 	DRAW_DETAIL("Target FPS", g_targetFPS);
 	DRAW_DETAIL("Theta", g_theta);
-	DRAW_DETAIL("N", m_bodyNum);
+	DRAW_DETAIL("N", m_positions.size());
 
 #undef DRAW_DETAIL
 }
