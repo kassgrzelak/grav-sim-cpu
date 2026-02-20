@@ -208,7 +208,7 @@ void Sim::draw() const
 				const float sqrVelocity = glm::length2(m_velocities[i]);
 				const int colormapIndex =
 					std::clamp(static_cast<int>(sqrVelocity / g_colormapMaxSqrSpeed * SPEED_COLORMAP_SIZE),
-						0, SPEED_COLORMAP_SIZE);
+						0, SPEED_COLORMAP_SIZE - 1);
 				const auto [r, g, b] = SPEED_COLORMAP_ARRAY[colormapIndex];
 				bodyColor = Color{r, g, b, static_cast<unsigned char>(g_bodyAlpha)};
 				break;
@@ -220,7 +220,7 @@ void Sim::draw() const
 				const float angle = atan2f(velocity.y, velocity.x) + PI;
 				const int colormapIndex =
 					std::clamp(static_cast<int>(angle / (2 * PI) * VELOCITY_COLORMAP_SIZE),
-						0, VELOCITY_COLORMAP_SIZE);
+						0, VELOCITY_COLORMAP_SIZE - 1);
 				const auto [r, g, b] = VELOCITY_COLORMAP_ARRAY[colormapIndex];
 				bodyColor = Color{r, g, b, static_cast<unsigned char>(g_bodyAlpha)};
 				break;
