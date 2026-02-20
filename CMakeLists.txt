@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(grav_sim_cpu)
-set(CMAKE_CXX_STANDARD 26)
+set(CMAKE_CXX_STANDARD 20)
 
 option(DEV_BUILD OFF)
 
@@ -18,7 +18,6 @@ endif()
 
 include(FetchContent)
 
-set(BUILD_LIBTYPE "STATIC" CACHE STRING "" FORCE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 find_package(raylib QUIET)

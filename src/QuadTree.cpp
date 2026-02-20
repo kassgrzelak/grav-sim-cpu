@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 
 static constexpr long double QUADTREE_RESERVE_MULTIPLIER = 2.5L;

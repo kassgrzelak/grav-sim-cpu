@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <execution>
 #include <format>
-#include <iostream>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 
 #include "BodyGenerator.hpp"
