@@ -9,6 +9,8 @@
 
 #include "colormap.hpp"
 
+constexpr int MAX_COLORMAP_MODE = 2;
+
 enum class ColormapMode
 {
     None, Speed, Velocity

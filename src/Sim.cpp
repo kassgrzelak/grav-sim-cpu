@@ -128,6 +128,13 @@ void Sim::takeInput()
 
 	g_deltaTime = g_timeScale / static_cast<float>(g_targetFPS);
 
+	// Colormap mode.
+	if (IsKeyPressed(KEY_G))
+	{
+		const int colormapMode = static_cast<int>(g_colormapMode);
+		g_colormapMode = static_cast<ColormapMode>((colormapMode + 1) % (MAX_COLORMAP_MODE + 1));
+	}
+
 	// Toggles.
 #define TOGGLE(key, var) \
 	if (IsKeyPressed(key)) \
@@ -189,16 +196,6 @@ void Sim::draw() const
 		const float radius = diameter / 2.0f;
 
 		Color bodyColor;
-
-		// if (g_colormapMode)
-		// {
-		// 	const float sqrVelocity = glm::length2(m_velocities[i]);
-		// 	const int colormapIndex = std::clamp(static_cast<int>(sqrVelocity / g_colormapMaxSqrSpeed * COLORMAP_SIZE), 0, 255);
-		// 	const Color3 color = COLORMAP_ARRAY[colormapIndex];
-		// 	bodyColor = Color{color.r, color.g, color.b, static_cast<unsigned char>(g_bodyAlpha)};
-		// }
-		// else
-		// 	bodyColor = Color{g_bodyColor.r, g_bodyColor.g, g_bodyColor.b, static_cast<unsigned char>(g_bodyAlpha)};
 
 		switch (g_colormapMode)
 		{
@@ -289,6 +286,7 @@ void Sim::drawControls()
 
 	// TODO: Legend for colormap modes.
 	DRAW_CONTROL("Q", "Quadtree visualization");
+	DRAW_CONTROL("G", "Cycle colormap mode");
 	DRAW_CONTROL("R", "Reverse time");
 	DRAW_CONTROL("D", "Show sim details");
 	DRAW_CONTROL("F", "Focus on system CoM");
